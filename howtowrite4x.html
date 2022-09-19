@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns#" lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+	  <!-- OGPタグの設定 -->
+    <meta property="og:url" content="http://niltheria.daynight.jp/bbt/tools/index.html" />
+		<meta property="og:title" content="BBT セッション準備支援ツール" />
+		<meta property="og:description" content="「ビーストバインドトリニティ」用の、主にオンラインセッションの準備を簡略化するためのwebツール集。" />
+		<meta property="og:image" content="http://niltheria.daynight.jp/sitelogo_summary.png" />
+		<meta property="og:type" content="article" />
+		<meta property="og:site_name" content="NiLtheria" />
+		<meta property="og:locale" content="ja_JP" />
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:site" content="@u_krasaka" />
+    <!-- HTML頁タイトル -->
+    <title>《変換 -Palette Converter-》V4 - BBTチャットパレットコンバーター</title>
+    <!-- CSS設定 -->
+    <link href="css/pc4x.css" rel="stylesheet" type="text/css">
+    <!-- bootstrapでフレームワーク構築 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  </head>
+
+  <body>
+    <!-- 1.a. タイトルボックスとオプション/大画面用  -->
+    <div class="container-fluid bg-primary p-2" style="margin-bottom:2em;">
+      <h2 class="text-light fw-bold">《<ruby>変換<rt>くみかえるもの</rt></ruby> -Palette Converter-》</h2>
+      <p class="text-light fs-6 m-1">
+        《変換 -Palette Converter-》は、<a href="https://character-sheets.appspot.com/" target="_blank" class="link-light fw-bold">キャラクターシート倉庫</a>に保存されたBBTのキャラクターシートから、各種オンラインセッションツールで使用するチャットパレットを生成する準備支援ツールです。<br>
+        本ページでは、使うにあたっての「キャラクターシートの書き方」や現在の仕様について解説します。
+      </p>
+    </div>
+
+    <div id="pc4x_tutorial" class="d-flex flex-column flex-lg-row align-items-start">
+
+      <!-- ナビゲーションバー -->
+      <nav
+        id="navbar-manual"
+        class="mx-3 p-1 col-lg-2 navbar navbar-light bg-light d-none d-lg-flex flex-column align-items-start justify-content-start"
+        style="position:sticky;top:10px;"
+      >
+        <h4 class="navbar-brand">マニュアル</h4>
+        <nav class="nav nav-pills d-flex flex-column">
+          <a class="nav-link" href="#item1"><span class="nav-head">ダメージロールに関する実例集</span>《魔獣化》中の値の書き方</a>
+          <a class="nav-link" href="#item2"><span class="nav-head">一般的な判定に関する実例集</span>アーツ・アイテムの判定値欄</a>
+          <a class="nav-link" href="#item3"><span class="nav-head">ココフォリア、ユドナリウムリリィ</span>リソース操作コマンドへの対応</a>
+          <a class="nav-link" href="#item4"><span class="nav-head">ユドナイト</span>消耗リソースの管理機能</a>
+          <a class="nav-link" href="#item5"><span class="nav-head">BCDiceの使い方</span>BBT判定式等のTips</a>
+        </nav>
+      </nav>
+
+      <!-- ナビゲーションバー 
+      <nav
+        id="navbar-manual-top"
+        class="mx-3 p-1 container-fluid d-lg-none navbar navbar-light bg-light d-flex flex-column align-items-start justify-content-start"
+        style="position:sticky;top:10px;"
+      >
+        <h4 class="nav-brand">マニュアル</h4>
+        <a class="nav-link" href="#item1">《魔獣化》中の値の書き方</a>
+        <a class="nav-link" href="#item2">アーツ・アイテムの判定値欄</a>
+      </nav>
+      -->
+
+      <!--本文-->
+      <article class="container-fluid">
+
+        <!-- 人間状態と魔獣化状態の書き分け -->
+        <div>
+          <h4 class="bg-primary p-2 px-3 rounded-pill text-white" id="item1">
+            <i class="fa-solid fa-feather"></i>
+            《魔獣化》中のみ適用される値の書き方
+          </h4>
+          <div class="p-lg-3">
+            <p>
+              BBTでは、<span class="fw-bold text-danger">《魔獣化》中のみ適用される値は、(　)内に書く</span>という通例があります。<br>
+            《変換 -Palette Converter-》は、この通例を考慮し、《魔獣化》中とそうでない状態（以下「人間状態」）の判定・ダメージロール式を切り分けて出力します。
+            </p>
+            <ul class="example list-unstyled">
+              <li><span class="fw-bold">《魔獣化》で変化する値だけ、固定値を差し替える場合</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <weapon-compact :objs="[weapons[4]]"></weapon-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li>この「銘刀」の攻撃力欄は <span class="text-primary fw-bold">10<span class="text-danger">(14)</span>+1D6</span> と記載されています。</li>
+                  <li>これは、<span class="text-primary fw-bold">「人間状態」なら10+1D6</span>、<span class="text-danger fw-bold">《魔獣化》中であれば14+1D6</span>であることを表します。このように、<span class="fw-bold text-danger">（　）内で囲んだ数字が正負符号（+か-）で始まらない場合、直前の数字またはダイス数と入れ替わります。</span>これは、以下の「差し替える」場合すべてで共通です。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">《魔獣化》で変化するダイス数を差し替える場合</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <weapon-compact :objs="[weapons[6], weapons[7]]"></weapon-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li>この「素手」の攻撃力欄は、ダイス部分が<span class="text-danger fw-bold">（　）</span>で囲まれています。</li>
+                  <li>この書き方は、どちらも<span class="text-primary fw-bold">「人間状態」なら10+1D6</span>、<span class="text-danger fw-bold">《魔獣化》中であれば10+2D6</span>であることを表します。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">《魔獣化》の有無で式を丸ごと差し替える場合</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <weapon-compact :objs="[weapons[8]]"></weapon-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li>この「素手」の攻撃力欄は、式全体が<span class="text-danger fw-bold">（　）</span>で囲まれています。このような、式全体を囲む形もOKです。</li>
+                  <li>この書き方も、<span class="text-primary fw-bold">「人間状態」なら10+1D6</span>、<span class="text-danger fw-bold">《魔獣化》中であれば10+2D6</span>であることを表します。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">《魔獣化》で変化する値だけ、式を書き足す場合</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <weapon-compact :objs="[weapons[9]]"></weapon-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li>この「銘刀」の攻撃力欄は <span class="text-primary fw-bold">10<span class="text-danger">(+4)</span>+1D6</span> と記載されています。</li>
+                  <li>これは、<span class="text-primary fw-bold">「人間状態」なら10+1D6</span>、<span class="text-danger fw-bold">《魔獣化》中であれば10+4+1D6</span>であることを表します。このように、<span class="fw-bold text-danger">（　）で囲んだ中身が正負記号で始まる場合、「人間状態」の間は（　）の中身を無視します。</span></li>
+                  <li>《魔獣化》中のみダイス部分を書き足したい場合、<span class="fw-bold text-primary">10+1D6<span class="text-danger">(+1D6)</span>のように記入してください。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">武器のダメージロールで【能力値】の記載を省略する</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <weapon-compact :objs="[weapons[0], weapons[1]]"></weapon-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li><span class="fw-bold text-primary">武器の「攻撃力」欄を正負記号で書き始めた場合</span>、<span class="fw-bold text-primary">武器の「属性」に指定された【能力値】が「攻撃力」欄の先頭にある</span>ものとしてダメージロール式を作成します。</li>
+                  <li>上記例の場合、「白兵武器：小型」は<span class="px-2 mx-2 rounded-2 fw-bold" style="background-color:#adb5bd3E;"><span class="text-danger">{肉体}</span>+1+1D6</span>として、「エリートクラード」は<span class="px-2 mx-2 rounded-2 fw-bold" style="background-color:#adb5bd3E;"><span class="text-danger">{社会}</span>+2+1D6</span>としてダメージロール式が作成されます。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">式の中に( )を入れたい場合</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <weapon-compact :objs="[weapons[10]]"></weapon-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li>《変換 -Palette Converter-》では、（　）を今までの例のように《魔獣化》中の値の変化を反映するために使いたいため、<span class="fw-bold text-danger">通常の計算式のような（　）の使い方は、あまり想定していません。</span></li>
+                  <li>どうしても計算式的に（　）を使いたい場合、それを《変換 -Palette Converter-》に明示するため、<span class="fw-bold text-danger">（　）の中身の先頭に、半角コロン : を置いてください。</span>半角コロンが先頭にある括弧書きの中身は、《魔獣化》中専用の値として扱わず、そのまま式に利用します。</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- アーツ・アイテムの判定値欄 -->
+        <div>
+          <h4  class="bg-primary p-2 px-3 rounded-pill text-white" id="item2">
+            <i class="fa-solid fa-feather"></i>
+            アーツ・アイテムの「判定値」欄について
+          </h4>
+          <div class="p-lg-3">
+            <p>
+              　BBTの判定は【能力値】を基準に行いますが、一部のアーツやアイテムは、判定に修正値が与えられたり、クリティカル値・ファンブル値が変化したりすることがあります。<br>
+              　データに固定の修正については、キャラクターシートの「判定値欄」にあらかじめ記入しておくことで、《変換 -Palette Converter-》が認識してチャットパレット用テキストに整形してくれます。記法がやや特殊ですので、詳しく知りたい方はお読みください。
+            </p>
+            <ul class="example list-unstyled">
+              <li><span class="fw-bold">アーツによる判定</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <arts-compact :objs="[arts[1]]"></arts-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li>《加速装置》は、一部の判定を［【技術】+2］で行なうことができるアーツです。アーツの「判定値」欄に <span class="fw-bold text-primary">技術+2</span> と記入しています。</li>
+                  <li>アーツによる判定は、【能力値】の名前と修正値をあわせて書いておくことで、「一般的な判定」の欄にその判定式を自動で出力します。</li>
+                  <li class="fw-bold text-danger">アーツによる判定の場合、【能力値】の名前は必須です。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">武器の命中判定</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <weapon-compact :objs="[weapons[0], weapons[1]]"></weapon-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li>武器の命中判定も、「命中」欄に指定があれば、その式を書き下します。今回は命中欄に <span class="fw-bold text-primary">+1</span> の指定があるため、命中判定は通常の判定に+1の修正を付けた式を作成します。</li>
+                  <li>武器の命中判定は、原則として白兵武器であれば【白兵】、射撃武器であれば【射撃】で行なうため、<span class="fw-bold text-danger">武器の「種別」欄に「白兵」「射撃」の指定があれば、対応する【能力値】を判定の基準とした判定式を作成します。</span><span class="fw-bold small text-secondary">（より正確には、「白」「射」の文字が種別欄に含まれていればOKです）</span></li>
+                  <li>「エリートクラード」のような、命中判定に使用する能力値が別途指定されている武器は、判定値欄にその【能力値】を記入してください。</li>
+                  <li>BBTのデータでは、アイテムに「種別：魔獣」がつくことはありませんが、<span class="fw-bold text-danger">その装備の命中判定は《魔獣化》中の判定式のみを作成したい場合は、アイテムの種別欄に「魔獣」と記入</span>してください。本ツールがそこを加味したテキストを作成します。</li>
+                  <li>「命中」欄の記載が<span class="text-danger fw-bold">「1」など正負符号なしに直接数字が書かれている場合</span>、それを「判定の基準値（固定値）」とするか、「プラスの修正」とするかは、オプションで選ぶことができます。自分の書き方に合わせて選択してください。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">乗り物の命中判定</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <weapon-compact :objs="[weapons[11], weapons[12]]"></weapon-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li class="text-primary fw-bold">乗り物による攻撃は、基本的に白兵攻撃で、【白兵】で命中判定を行います。</li>
+                  <li>ただし、以下のような<span class="text-danger fw-bold">一部の乗り物は、攻撃が射撃攻撃となり、【射撃】で命中判定を行います</span>。
+                    <ul class="text-success small fw-bold">
+                      <li>種別欄に「魔艦」を含む乗り物すべて</li>
+                      <li>装備の『名称』か『備考』に「コスモマシン」「未確認飛行物体」「アームドヴィークル」「要塞宝具」「戦闘飛装脚」のいずれかを含むもの<br>（相当品ルールを考慮し、備考欄も参照します。なお、「要塞宝具」「戦闘飛装脚」はゲーマーズフィールド誌にて追加された特定ルーツ用の装備で、2022年9月現在はサプリメント収録されていません）</li>
+                    </ul>
+                  </li>
+                  <li>《変換 -Palette Converter-》は、<span class="fw-bold text-primary">種別欄に「乗」の文字を含む装備</span>について、上記の事項を考慮して命中判定の式を作成します。ただし、種別に「白兵」「射撃」を別途記入している場合は、そちらを優先します。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">その判定限定のクリティカル値・ファンブル値の指定</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <weapon-compact :objs="[weapons[2], weapons[3]]"></weapon-compact>
+                    <arts-compact :objs="[arts[5]]"></arts-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li class="fw-bold">特定のアーツや武器・乗り物の命中判定だけにクリティカル値・ファンブル値の修正がかかる場合、「判定値」「命中」欄に記入しておくと、テキスト出力の際に考慮されます。</li>
+                  <li><span class="fw-bold text-primary">そのアーツ・装備の判定でのみクリティカル値に修正がかかる</span>場合、 <span class="fw-bold text-primary">@-1</span> のように、半角アットマークに続けて修正値を記入してください。
+                    <ul class="small text-secondary">
+                      <li>上の「虚銃 -Type Long-」の例だと、この武器で行なう命中判定のみ、クリティカル値がさらに-1されることを意味します。</li>
+                    </ul>
+                  </li>
+                  <li><span class="fw-bold text-danger">そのアーツ・装備の判定でのみファンブル値に修正がかかる</span>場合、 <span class="fw-bold text-danger">#+1</span> のように、半角シャープに続けて修正値を記入してください。
+                    <ul class="small text-secondary">
+                      <li>上の「フランケンシュタインの怪物」の例だと、この武器で行なう命中判定のみ、ファンブル値がさらに+1されることを意味します。</li>
+                    </ul>
+                  </li>
+                  <li class="fw-bold">アーツの判定値欄に書く場合、【能力値】の記載は必須ですので、上の「魔法の呪文：弾幕魔術」の例のようにお書きください。</li>
+                  <li>特定の条件下において、全ての判定にファンブル値の修正がかかるような場合は、エディタの「汎用クリティカル値・ファンブル値の設定」欄から当てはまるアーツにチェックを入れてください。</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- コストの記法 -->
+        <div>
+          <h4  class="bg-primary p-2 px-3 rounded-pill text-white" id="item3">
+            <i class="fa-solid fa-feather"></i>
+            リソース操作のコマンド
+          </h4>
+          <div class="p-lg-3">
+            <p>
+              　「ココフォリア」を始めとした各種ツールにおいて、テキストチャットから【FP】や人間性の変化を反映させる『リソース操作』のコマンドが実装されています。<br>
+              　ほとんどのツールにおいて「ココフォリア」のものがベースになっているため、特にここでは「ココフォリア」「ユドナリウムリリィ」のそれについて簡単に解説します。
+            </p>
+            <ul class="example list-unstyled">
+              <li><span class="fw-bold">ココフォリアのリソース操作記法</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <a class="link-success fw-bold" href="https://docs.ccfolia.com/pl-tutorial/character-edit/status-setting" target="_blank">「ココフォリア」として正式な内容は、ココフォリア公式ドキュメントをお読みください</a>。<br>
+                    この項目は、2022年度にリリースが予定されている「Ccfolia white [ver 2.0]」で仕様変更があった場合、更新を行います。
+                    <pre class="m-1 alert alert-light border-1 border-secondary rounded-3">:FP+5　→「FP」のステータスを+5する
+:FP=14　→「FP」のステータスを14にする
+:人間性-3 → 「人間性」のステータスを-3する</pre>
+                  </li>
+                </ul>
+                <ul>
+                  <li>ココフォリアでは、「ステータス」として駒情報に登録したリソースを、上記のようなリソース操作コマンドをメッセージとして送信することで、ステータスを直接変更することができます。</li>
+                  <li><span class="text-danger fw-bold">2022年9月時点の「ココフォリア ver 1.X」シリーズでは、以下のようなコマンド入力は、おそらくユーザーが期待して入力したような動作を取りません。</span>そのため、「シーン登場宣言と人間性の低下をまとめて行なう」…というような挙動を取るチャットパレット等は作れません。
+                    <ul>
+                      <li><span class="px-2 rounded-2 fw-bold" style="background-color:#adb5bd3E;">:人間性=-1</span>のような、「負の数」を直接指定するステータス操作。ステータス操作コマンドとして認識されず、普通にチャットとして送信されます。</li>
+                      <li><span class="px-2 rounded-2 fw-bold" style="background-color:#adb5bd3E;">:人間性-2D6</span>のような、操作する値にダイスロールを含むもの。この場合、余分な「D」以降のテキストは無視され、<span class="p-1 px-2 rounded-2 fw-bold" style="background-color:#adb5bd3E;">:人間性-2</span>として認識されるようです</li>
+                      <li><span class="px-2 rounded-2 fw-bold" style="background-color:#adb5bd3E;">:人間性-2-2</span>のような、操作する値が数式になっているもの。ステータス操作コマンドとして認識されません。</li>
+                      <li>ステータス操作コマンドが、文の先頭にないもの。（ステータス操作コマンドの半角コロンが先頭でなければならず、たとえ半角スペースのような空白文字でもダメです）</li>
+                      <li>ステータス操作コマンドの後に文章が続いている場合、そのステータス操作コマンドが適切なものであれば処理されますが、そのあとの文章は切り捨てられ、チャット欄には表示されません。</li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">ユドナリウムリリィのリソース操作記法</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <a class="link-success fw-bold" href="https://cylinder-lily.com/" target="_blank">「ユドナリウムリリィ」として正式な内容は、ユドナリウムリリィのドキュメントをお読みください</a>。<br>
+                    <pre class="m-1 alert alert-light border-1 border-secondary rounded-3">:人間性-3 :FP-10　→ 「人間性を-3」「FPを-10」の両方を行う
+:人間性-2D6　→ ダイスロールを含む式にも対応
+《魔獣化》（コスト :人間性-1）　→ 文の途中にあるリソース操作記法にも反応する</pre>
+                  </li>
+                </ul>
+                <ul>
+                  <li>「ユドナリウムリリィ」には、ココフォリアのステータス操作コマンドを発展させたものが搭載されており、「ココフォリア ver 1.X」ではできないとして挙げたものは全て行うことができます。</li>
+                  <li>《変換 -Palette Converter-》では、この仕様を反映し、<span class="fw-bold">「アーツの宣言文にコスト支払いのリソース操作コマンドを埋め込んだテキスト」</span>を出力しています。これによって、「アーツの宣言文と同時にコスト支払い」「シーン登場の宣言と同時に人間性低下」が行なわれます。</li>
+                  <li>アーツのコストを書く際、以下の点にご注意いただけますと幸いです。
+                    <ul class="small text-primary fw-bold">
+                      <li>《内なる獣》等の「コピーしたアーツのコストが増える」コピーアーツで「コスト：愛」のアーツをコピーした場合、コストは「愛＆人間性3点」になります（公式FAQより）。この場合、コスト欄には<span class="px-2 rounded-2 fw-bold" style="background-color:#adb5bd3E;">愛+3</span>とご記入ください。</li>
+                      <li>単純に数字が書かれている場合、それはコストが人間性であるとしてテキストを作成します。「愛」「罪」「大罪」「反動n（nは数字）」はコスト欄に明記してください。（愛・罪・大罪の場合、数字は必要ありません）</li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- 消耗リソース管理機能 -->
+        <div>
+          <h4  class="bg-primary p-2 px-3 rounded-pill text-white" id="item4">
+            <i class="fa-solid fa-feather"></i>
+            ユドナイトの「消耗リソース管理機能」への対応
+          </h4>
+          <div class="p-lg-3">
+            <p>
+              　ユドナイトのキャラクター駒には、それ自身が持つ「消耗リソース」……BBTで言えば「使い捨てのアイテム」「アーツの残り使用回数」を<span class="fw-bold text-primary">駒ごとに紐づけて管理</span>する機能があります。<br>
+              　《変換 -Palette Converter-》でも、特定の文言が備考欄や種別欄に書き込まれたアーツ・アイテム・装備を登録するような形で対応しています。
+            </p>
+            <ul class="example list-unstyled">
+              <li><span class="fw-bold">「種別：使い捨て」のアイテム</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <item-compact :objs="[items[0], items[1]]"></item-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li><span class="fw-bold text-primary">種別欄に「捨」の文字を含む、または備考欄に「使い捨て」の文言を含む一般アイテム</span>を、『使い捨てアイテム』のリソースとして登録します。</li>
+                  <li>この時、<span class="fw-bold text-success">x</span>（小文字のエックス）<span class="fw-bold text-success">×</span>（かける） <span class="fw-bold text-success">*</span>（アスタリスク）のいずれかに続けて数字が書かれている場合、その数だけ持っているとして計上し登録します。
+                    <ul>
+                      <li class="small text-secondary">
+                        分かる人向けの資料：個数については、以下の正規表現にあてはまる名称に反応します。一部の機動警察装備の誤認を防ぐため、大文字のエックスは対象にしていません<pre class="px-2 mx-1 border border-secondary" style="width:auto;">/([^x×\*]+)(?:[x×\*](\d+))?/</pre>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">ラウンド／シーン／シナリオ●回まで使用可能なアーツ等</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    <arts-compact :objs="[arts[4], arts[6], arts[7], arts[8]]"></arts-compact>
+                  </li>
+                </ul>
+                <ul>
+                  <li>備考欄に特定の文言を含むアーツやアイテム（武器を含む）を、それぞれラウンド制限／シーン制限／シナリオ制限のリソースとして登録を行ないます。</li>
+                  <li>対応する表現は以下の通りです。なお、●の部分は基本的に数字が入ります。
+                    <ul class="fw-bold small">
+                      <li class="text-success">ラウンド制限：ラウンド●回　または　R●回　または　●/R</li>
+                      <li class="text-primary">シーン制限：シーン●回　または　Sn●回　または　●/Sn</li>
+                      <li class="text-danger">シナリオ制限：シナリオ●回　または　Sr●回　または　●/Sr</li>
+                    </ul>
+                  </li>
+                  <li>また、アーツの制限回数（上の一覧の「●」部分）は以下の3種類の記法に対応します。ただし、「LV」を含むものはレベルのデータが登録されたアーツにしか反応しません。
+                    <ul class="fw-bold small">
+                      <li>通常の数字（例：ラウンド1回）</li>
+                      <li>LV（例：シーンLV回）</li>
+                      <li>[LV+1]または(LV+1) のような、「LV+数字」を角括弧か丸括弧で囲んだもの（例：シナリオ[LV+1]回）</li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 消耗リソース管理機能 -->
+        <div>
+          <h4  class="bg-primary p-2 px-3 rounded-pill text-white" id="item5">
+            <i class="fa-solid fa-feather"></i>
+            Tips of BCDice
+          </h4>
+          <div class="p-lg-3">
+            <p>
+              　《変換 -Palette Converter-》は、多数のオンラインセッションツールで使用されているダイスロール処理システム、<a class="link-primary fw-bold" href="https://bcdice.org/" target="_blank">『BCDice』</a>に準拠したダイスコード・テキストを出力します。<br>
+              　『BCDice』を使う上で知っておくと便利な機能について、本ツールが絡まない範囲を含めていくつか記しておきます。セッション運用の参考になれば幸いです。
+            </p>
+            <p>　<a class="fw-bold link-primary" href="https://docs.bcdice.org/" target="_blank">『BCDice』コマンドガイド</a>もあわせてお読みください。</p>
+            <ul class="example list-unstyled">
+              <li><span class="fw-bold">シーン登場時の人間性低下処理</span>
+                <ul class="list-unstyled nest-table">
+                  <li>
+                    <div class="alert alert-secondary fw-bold">
+                      2D6KH1 シーン登場時の人間性低下【迫害状態】
+                    </div>
+                  </li>
+                </ul>
+                <ul>
+                  <li>参照：BCDiceコマンドガイド/<a class="fw-bold link-primary" href="https://docs.bcdice.org/command/add_dice.html" target="_blank">加算ダイス</a></li>
+                  <li>『2D6KH1』（または『2D6MAX』）は、『2D6を振り、その中から出目の最も高い1つを選んで結果として提示する』意味のダイスです。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">選択肢からランダムに選ぶ、同じ式を繰り返し振る</span>
+                <ul class="list-unstyled nest-table">
+                  <li>
+                    <div class="alert alert-secondary fw-bold">
+                      choice[PC1,PC2,PC3,PC4] 攻撃対象えらぶ<br>
+                      x3 choice[PC1,PC2,PC3,PC4] 攻撃対象えらぶ クラード3組分
+                    </div>
+                  </li>
+                </ul>
+                <ul>
+                  <li>参照：BCDiceコマンドガイド/<a class="fw-bold link-primary" href="https://docs.bcdice.org/command/choice.html" target="_blank">チョイスコマンド</a> <a class="fw-bold link-primary" href="https://docs.bcdice.org/command/repeat.html" target="_blank">繰り返しコマンド</a></li>
+                  <li>攻撃対象をランダムに選びたい……！という時は、choiceコマンドが便利です。</li>
+                  <li>2行目頭の「x3」は、「このコマンドを3回繰り返す」という意味の繰り返しコマンドです。これは他のダイスロール（もちろんBBTの判定用のコマンドも含む）でも使えるので、覚えておくと便利です。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">出目固定：《運命歪曲》のような、ダイスひとつを指定して振り直すアーツを処理する</span>
+                <ul class="list-unstyled nest-table">
+                  <li>
+                    <div class="alert alert-secondary fw-bold">
+                      2BB+10%{人間性}$1 <span class="fw-normal" style="font-size:80%;">... ダイスロールを行なう際、出目の片方を「1」で固定</span><br>
+                      2BB+10%{人間性}$66 <span class="fw-normal" style="font-size:80%;">... ダイスロールを行なう際、出目を「6」「6」で固定</span><br>
+                      2BB+10%{人間性}@-1#+1$1 <span class="fw-normal" style="font-size:80%;">... クリティカル値・ファンブル値修正と組み合わせる場合の順番はこう</span>
+                    </div>
+                  </li>
+                </ul>
+                <ul>
+                  <li>BBT判定式には、出目を固定して振る「$(数字)」の機能があります。これを使うと、《運命歪曲》や《勝利の旗印》のようなアーツの処理が楽にできます。</li>
+                  <li>BBT判定式は<span class="fw-bold text-danger">『人間性引用→クリティカル値→ファンブル値→出目固定』の順で記入する</span>必要があるため、組み合わせる場合は最後に入れてください。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">出目保障：《それでこそ我がライバル！》や「エヴィルセンス」の効果を適用する</span>
+                <ul class="list-unstyled nest-table">
+                  <li>
+                    <div class="alert alert-secondary fw-bold">
+                      2BB+10%{人間性}&3 <span class="fw-normal" style="font-size:80%;">... ダイスロールを行なう際、最低でも「3」の出目を保証する</span><br>
+                      2BB+10%{人間性}$6&3 <span class="fw-normal" style="font-size:80%;">... 上記「出目固定」と併用する場合、「出目保証」のほうを後にする</span><br>
+                    </div>
+                  </li>
+                </ul>
+                <ul>
+                  <li>一部の追加データが有する、「1と2の出目を3として扱う」効果は、「&v」機能で処理できます。</li>
+                  <li>上記の「出目固定」機能と、この「出目保障」を併用する場合、必ず「出目保障」のほうを後ろにおいてください。</li>
+                  <li><span class="fw-bold text-danger">この機能は、判定式でのみ有効です。</span>通常のダイスロール（ダメージロールに使う普通のダイスコード）には適用されません。</li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">《エネルギー袋》の効果を処理する</span>
+                <ul class="list-unstyled nest-table">
+                  <li>
+                    <div class="alert alert-secondary fw-bold">
+                      <span class="text-primary">10</span>TY<span class="text-danger">6</span> <span class="fw-normal" style="font-size:80%;">... <span class="fw-bold text-danger">6</span>面ダイスを<span class="fw-bold text-primary">10</span>個振り、どの出目がいくつ出たかを集計する</span><br>
+                      <i class="fw-normal">ダイスロール集計結果 - 10TY6 → 6,6,3,6,5,1,1,3,4,2 → [1]×2, [2]×1, [3]×2, [4]×1, [5]×1, [6]×3</i><br>
+                      c(3*(2+1+2)+4*1+5*1+6*3) <span class="fw-normal" style="font-size:80%;">... 計算機能を使って集計</span>
+                    </div>
+                  </li>
+                </ul>
+                <ul>
+                  <li>参照：BCDiceコマンドガイド/
+                    <a class="fw-bold link-primary" href="https://docs.bcdice.org/command/tally_dice.html" target="_blank">集計ダイス</a>、
+                    <a class="fw-bold link-primary" href="https://docs.bcdice.org/command/calc.html" target="_blank">計算コマンド</a>
+                  </li>
+                  <li>怪獣使いのアーツ、《エネルギー袋》は、「タイミング：常時」でダメージロールの出目を修正するとんでもないアーツです。<s style="font-size:80%;">ダイスボットに限らずリアルセッションでも超大変じゃないですかねこの処理</s></li>
+                  <li>これに直接対応するコマンドそのものはBCDiceに存在しません。2022年9月現在の実装であれば、「集計ダイス」機能と「計算コマンド」を使って処理するのが確実と思われます。</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </article>
+
+    </div>
+
+    <footer class="container-fluid bg-secondary text-white p-1" style="display:flex; flex-direction:column; justify-content:center; text-align:center;">
+      <h6 class="fw-bold border-bottom m-0 p-0">《変換 -Palette Converter-》 version 4.X</h6>
+      <p class="m-0 p-1" style="font-size:0.8rem;">
+        Copyright (c) 2022 Yu Krasaka <a class="text-white" href="https://twitter.com/u_krasaka" target="_blank">(Twitter: @u_krasaka)</a><br>
+        Released under the MIT license<br>
+        <a class="text-white" href="https://opensource.org/licenses/mit-license.php" target="_blank">https://opensource.org/licenses/mit-license.php</a>
+      </p>
+      <p class="border-top m-0" style="font-size:0.8rem;">
+        本webツールは、「F.E.A.R.」及び「株式会社KADOKAWA」が権利を有する『ビーストバインド トリニティ』の二次創作物です。(c)井上純一、重信康／F.E.A.R.
+      </p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/2a572495d4.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@next" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="script/tutorial.js"></script> <!-- 基本機能 -->
+  </body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<!-- OGPタグの設定 -->
+  <meta property="og:url" content="http://niltheria.daynight.jp/bbt/tools/index.html" />
+  <meta property="og:title" content="BBT セッション準備支援ツール" />
+	<meta property="og:description" content="「ビーストバインドトリニティ」用の、主にオンラインセッションの準備を簡略化するためのwebツール集。" />
+	<meta property="og:image" content="http://niltheria.daynight.jp/sitelogo_summary.png" />
+	<meta property="og:type" content="article" />
+	<meta property="og:site_name" content="NiLtheria" />
+	<meta property="og:locale" content="ja_JP" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:site" content="@u_krasaka" />
+  <!-- ここまで -->
+
+  <!-- HTML タイトル -->
+  <title>BBT 《変換 -Palette Converter-》4.X パッチノート</title>
+
+  <!-- CSSの設定 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <link href="css/pc4x.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <div class="history-container">
+    <div class="container-fluid bg-primary p-2">
+      <h2 class="text-light fw-bold">《<ruby>変換<rt>くみかえるもの</rt></ruby> -Palette Converter-》 Patch notes</h2>
+      <p class="text-light fs-6 m-1">
+        《変換 -Palette Converter-》は、<a href="https://character-sheets.appspot.com/" target="_blank" class="link-light fw-bold">キャラクターシート倉庫</a>に保存されたBBTのキャラクターシートから、各種オンラインセッションツールで使用するチャットパレットを生成する準備支援ツールです。<br>
+        本ページは、version 4.X系列における更新情報を示します。
+      </p>
+    </div>
+    <div class="m-1 my-3">
+      本ツールの更新履歴は、以下の通りです。
+    </div>
+
+    <div class="container m-1">
+      <h3 class="text-primary border-bottom border-primary border-2 p-1">
+        [4.0.0 - Pre-release]
+      </h3>
+      <p><time>プレリリース：2022/9/17</time></p>
+      <ul class="history">
+        <li>
+          <span class="fw-bold text-primary">CSSフレームワークを Bootstrap5 に変更しました。</span>
+          <ul class="small">
+            <li>アコーディオンメニューをベースに、レイアウトを刷新しました。</li>
+            <li>ウィンドウ幅の狭い端末における入力欄の変化は、今まで通りです。</li>
+          </ul>
+        </li>
+        <li>
+          <span class="fw-bold text-primary">以下のオンラインセッション用ツールを、対応ツールに追加しました。</span>
+          <ul>
+            <li class="my-1">
+              <a href="https://github.com/Mafty-Hs/Udonite" target="_blank" class="link-success fw-bold">「ユドナイト」</a>
+              <ul class="small">
+                <li>マフティー氏が開発する、ユドナリウム派生ツールです。サーバー側にデータを保存でき、テキストセッション向け機能を複数有します。</li>
+                <li>キャラクター駒データとしては、「消耗リソース管理」の機能が特徴であり、単独ツールとしての対応を行いました。</li>
+                <li>テキストチャット部分はUdonarium with Flyに由来するものも多く、本ツールでもwithFlyと同様のオプション設定が行えるようにしてあります。</li>
+              </ul>
+            </li>
+            <li class="my-1">
+              <a href="https://yutorize.2-d.jp/?ytchat-adv" target="_blank" class="link-success fw-bold">「ゆとチャadv.」</a>
+              <ul class="small">
+                <li>TALE氏が開発する、プレーンなテキストチャットを主戦場とするオンラインセッションツールです。</li>
+                <li>自鯖導入を前提とし、他ツールとカバーする範囲が異なるテキストコマンドのため、対応を行いました。</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <span class="fw-bold text-primary">エディタ全体について、以下の点を変更しました。</span>
+          <ul class="small">
+            <li>出力オプションの自動保存・手動保存・情報削除を「オプション」ボタンのプルダウンメニューにまとめました。</li>
+            <li>アーツ・アイテムの使用宣言文について、細かいカスタマイズが可能になりました。</li>
+            <li>アーツ・アイテムの「判定値」欄に複数の【能力値】を記入した場合でも、4.Xシリーズでは記入された全ての【能力値】に対して判定式を作成します。</li>
+          </ul>
+        </li>
+        <li>
+          <span class="fw-bold text-primary">キャラクター駒出力について、以下の仕様変更を行いました。</span><br>
+          各ツールにそれぞれ寄り添った機能の駒を間違いなく出力するため、ご容赦いただけますと幸いです。
+          <ul class="small text-danger">
+            <li class="fw-bold">チャットパレット出力後、使用ツールを変更した場合、駒データ出力のために再度のチャットパレット作成しなおしを要求するようになりました。</li>
+            <li class="fw-bold">「チャットパレット出力後、そのまま駒データまで出力する」オプション機能を削除しました。</li>
+            <li>ユドナリウム系ツールの駒出力において、イニシアティブ集計用のパラメータ出力名を任意に変更できるようにしました。各卓示し合わせて設定をお願いいたします。</li>
+            <li class="text-black">駒データにおいて一部項目のデータを初期化する際、確認ウィンドウを呼び出すように変更しました。</li>
+          </ul>
+        </li>
+        <li>
+          <span class="fw-bold text-primary">ルーツ「モータル」のキャラクターシートを出力するに際し、以下の対応を行ないました。</span>
+          <ul class="small">
+            <li class="my-1">「《記憶封印》を取得していないモータル」の判定条件を、以下のふたつのどちらかを満たす場合に変更しました。（3.Xシリーズは、前者のみでした）
+              <ol class="text-danger">
+                <li>キャラクターシートに「モータル」のルーツを含み、「ハーミット」以外のブラッドを持たない</li>
+                <li>『汎用クリティカル・ファンブル値の設定』欄において、『《記憶封印》されていないモータル』の項目にチェックが入っている</li>
+              </ol>
+            </li>
+            <li class="my-1">モータルの自動取得アーツ《愛という拠り所》によって与えられる、「愛」を消費して適用する効果を、「愛の効果」として出力するようになりました。</li>
+            <li class="my-1">《記憶封印》を持たないモータルは、以下の項目を出力しません。
+              <ol class="text-danger">
+                <li>シーン登場時の人間性低下（ダイスを振らず、「シーンに登場」というテキストのみが出力されます）</li>
+                <li>「罪の効果」および「愛の効果：罪の効果を他者に適用」の宣言文</li>
+                <li>キャラクター駒の「人間性」「罪」「大罪」のリソース項目</li>
+              </ol>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <span class="fw-bold text-primary">Udonarium with Flyのチャットパレット／駒出力に関して、以下の調整を行いました。</span>
+          <ul class="small">
+            <li>キャラクター駒作成の際に、チャットパレットの発言カラーをあらかじめ設定できるようにしました。</li>
+            <li>愛・罪の効果を、吹き出し設定の反映対象にしました。ロマサガ風の「ダメージ増強！」とかそういうのを見られます。</li>
+            <li>キャラクターシートのURLを、駒データに紐づけるようにしました。駒右クリックから参照が可能です。</li>
+            <li class="text-secondary">出力の際、「数値」型のパラメータの出力を、内部的に type="simpleNumber" で登録するようにしました。</li>
+          </ul>
+        </li>
+        <li>
+          <span class="fw-bold text-primary">ユドナリウムリリィのチャットパレット／駒出力に関して、以下の調整を行いました。</span>
+          <ul class="small">
+            <li>キャラクター駒作成の際に、チャットパレットの発言カラー（3色分）をあらかじめ設定できるようにしました。</li>
+            <li>通常、アーツのコスト支払いはユドナリウムリリィのリソース操作コマンドを介して行ないますが、これを行わないように、「他のツールと同様のテキスト」で出力を行うオプションを追加しました。</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <footer class="container-fluid bg-secondary text-white p-1" style="display:flex; flex-direction:column; justify-content:center; text-align:center;">
+    <h6 class="fw-bold border-bottom m-0 p-0">《変換 -Palette Converter-》 version 4.X</h6>
+    <p class="m-0 p-1" style="font-size:0.8rem;">
+      Copyright (c) 2022 Yu Krasaka <a class="text-white" href="https://twitter.com/u_krasaka" target="_blank">(Twitter: @u_krasaka)</a><br>
+      Released under the MIT license<br>
+      <a class="text-white" href="https://opensource.org/licenses/mit-license.php" target="_blank">https://opensource.org/licenses/mit-license.php</a>
+    </p>
+    <p class="border-top m-0" style="font-size:0.8rem;">
+      本webツールは、「F.E.A.R.」及び「株式会社KADOKAWA」が権利を有する『ビーストバインド トリニティ』の二次創作物です。(c)井上純一、重信康／F.E.A.R.
+    </p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+  <script src="https://kit.fontawesome.com/2a572495d4.js" crossorigin="anonymous"></script>
+</body>
+</html>

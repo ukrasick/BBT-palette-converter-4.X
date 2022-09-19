@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns#" lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+	  <!-- OGPタグの設定 -->
+    <meta property="og:url" content="http://niltheria.daynight.jp/bbt/tools/index.html" />
+		<meta property="og:title" content="BBT セッション準備支援ツール" />
+		<meta property="og:description" content="「ビーストバインドトリニティ」用の、主にオンラインセッションの準備を簡略化するためのwebツール集。" />
+		<meta property="og:image" content="http://niltheria.daynight.jp/sitelogo_summary.png" />
+		<meta property="og:type" content="article" />
+		<meta property="og:site_name" content="NiLtheria" />
+		<meta property="og:locale" content="ja_JP" />
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:site" content="@u_krasaka" />
+    <!-- HTML頁タイトル -->
+    <title>《変換 -Palette Converter-》V4 - BBTチャットパレットコンバーター</title>
+    <!-- CSS設定 -->
+    <link href="css/pc4x.css" rel="stylesheet" type="text/css">
+    <!-- bootstrapでフレームワーク構築。使いにくければ慣れているw3.cssに戻す -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  </head>
+  <body>
+    <!-- 本文 -->
+    <div id="pc4x_core">
+      <!-- 1.a. タイトルボックスとオプション/大画面用 -->
+      <div class="container-fluid d-none d-lg-block bg-primary p-2">
+        <h2 class="text-light fw-bold">《<ruby>変換<rt>くみかえるもの</rt></ruby> -Palette Converter-》</h2>
+        <p class="text-light fs-6 m-1">
+          《変換 -Palette Converter-》は、<a href="https://character-sheets.appspot.com/" target="_blank" class="link-light fw-bold">キャラクターシート倉庫</a>に保存されたBBTのキャラクターシートから、各種オンラインセッションツールで使用するチャットパレットを生成する準備支援ツールです。
+        </p>
+      </div>
+      <div class="container-fluid bg-white d-none d-lg-block sticky-menu fs-6 p-2 border" v-cloak>
+
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
+          <div style="display:flex; flex-direction:column; width:25em;" v-if="Object.keys(character.mainData).length === 0">
+            <span class="fw-bold text-primary" style="font-size:80%;">キャラクターシート倉庫URL：</span>
+            <input type="text" v-model="character.sheetUrl" style="width:100%; height:2em;" @change="revokeMainData()">
+          </div>
+
+          <div style="display:flex; flex-direction:column; width:25em;" v-else>
+            <span class="fw-bold text-primary" style="font-size:80%;">現在読み込み中のキャラクター：</span>
+            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items: center; width: 100%;">
+              <div class="alert alert-secondary p-1 m-0 ellipsis">{{ character.mainDataName }}</div>
+              <button class="btn btn-secondary border p-1 px-2 m-0" type="button" @click="initializeCharacterSheetData(true)" style="height:2em;">
+                <i class="fas fa-power-off"></i>
+                破棄
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column;">
+            <span class="fw-bold text-primary" style="font-size:80%;">ツール指定：</span>
+            <select v-model="settings.general.sessionTool" style="height:2em;" @change="initializePawnData()">
+              <option v-for="t in supportedTools" :key="t">{{t}}</option>
+            </select>
+          </div>
+
+          <div>
+            <button type="button" class="btn btn-primary" @click="processStart()">
+              <span v-show="!character.mainDataName">
+                <i class="fas fa-dice-d6"></i>
+                チャットパレットを出力
+              </span>
+              <span v-show="character.mainDataName">
+                <i class="fas fa-redo"></i>
+                チャットパレット再出力
+              </span>
+            </button>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+              オプション保存
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+              <li>
+                <button class="dropdown-item" @click="settings.general.autoSave = !settings.general.autoSave"
+                 style="display:flex; align-items:center;">
+                  <input type="checkbox" v-model="settings.general.autoSave" style="cursor:pointer; margin-right:4px;">
+                  <span class="fw-bold">自動保存</span>
+                </button>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li class="p-1">
+                <button type="button" class="btn btn-success fw-bold" style="width:100%;text-align:center;" @click="save_options(true)">
+                  現状を保存
+                </button>
+              </li>
+              <li class="p-1">
+                <button type="button" class="btn btn-danger fw-bold" style="width:100%;text-align:center;" @click="reset_options()">
+                  プリセット削除
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+              ヘルプ
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+              <li>
+                <a class="dropdown-item" href="howtowrite4x.html" target="_blank">マニュアル</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="patchnotes4x.html" target="_blank">パッチノート</a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item" href="#" target="_blank">Github</a>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+      <!-- 1.b. タイトルボックスとオプション/画面小さ目 -->
+      <div class="d-lg-none accordion sticky-menu bg-white" id="accordionMenu">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="menuOne">
+            <button class="accordion-button collapsed bg-primary bg-opacity-25" type="button" data-bs-toggle="collapse" data-bs-target="#accordionMenuPanelOne" aria-expanded="false" aria-controls="accordionMenuPanelOne">
+              <span class="fw-bold">《変換 -Palette Converter-》メニュー</span>
+            </button>
+          </h2>
+          <div id="accordionMenuPanelOne" class="accordion-collapse collapse border" aria-labelledby="menuOne" data-bs-parent="#accordionMenu">
+            <div class="accordion-body" style="display:flex;justify-content:center;">
+              <div class="container fs-6">
+                <div class="row gy-2">
+                  <div class="col-4 bg-secondary text-white fw-bold rounded-3 mobile-menu-title">
+                    <span>URL</span>
+                  </div>
+                  <div class="col-8">
+                    <input type="text" v-model="character.sheetUrl" style="width:100%;height:2.5em;" @change="revokeMainData()">
+                  </div>
+                  <div class="col-4 bg-secondary text-white fw-bold rounded-3 mobile-menu-title">
+                    <span>ツール</span>
+                  </div>
+                  <div class="col-8">
+                    <select v-model="settings.general.sessionTool" style="width:100%;height:2.5em;" @change="initializePawnData()">
+                      <option v-for="t in supportedTools" :key="t">{{t}}</option>
+                    </select>
+                  </div>
+                  <div class="col-4 bg-secondary text-white fw-bold rounded-3 mobile-menu-title">
+                    <span>出力</span>
+                  </div>
+                  <div class="col-8">
+                    <button type="button" class="btn btn-primary" @click="processStart()" style="width:100%;height:2.5em;">
+                      <span v-show="!character.mainDataName">
+                        <i class="fas fa-dice-d6"></i>
+                        出力
+                      </span>
+                      <span v-show="character.mainDataName">
+                        <i class="fas fa-redo"></i>
+                        再出力
+                      </span>
+                    </button>
+                  </div>
+                  <div class="col-4 bg-secondary text-white fw-bold rounded-3 mobile-menu-title" style="height:2.5em;" v-show="character.mainDataName">
+                    <span>現在読込中</span>
+                  </div>
+                  <div class="col-8" style="height:2.5em;display:flex;justify-content:space-between;align-items:center;" v-show="character.mainDataName">
+                    <span class="fw-bold">{{character.mainDataName}}</span>
+                    <button type="button" class="rounded-2 p-1 px-3 btn-warning" @click="initializeCharacterSheetData(true)">
+                      破棄
+                    </button>
+                  </div>
+                  <div class="col-4 bg-secondary text-white fw-bold rounded-3 mobile-menu-title" style="height:2.5em;">
+                    <span>オプション</span>
+                  </div>
+                  <div class="col-8" style="height:2.5em;display:flex;justify-content:space-between;align-items:center;">
+                    <div class="fw-bold form-check form-switch">
+                      <label style="cursor: pointer;">
+                        <input class="form-check-input" type="checkbox" v-model="settings.general.autoSave" style="cursor: pointer;">
+                        <span>自動保存</span>
+                      </label>
+                    </div>
+                    <button type="button" class="rounded-2 p-1 px-3 btn-success">
+                      保存
+                    </button>
+                  </div>
+                  <div style="display:flex; flex-wrap: wrap; justify-content:space-around; align-items: center;">
+                    <div class="col-5 m-2 p-2 border rounded-3" style="height:2.5em;text-align:center;">
+                      <a href="howtowrite4x.html" target="_blank" class="link-primary fw-bold">マニュアル</a>
+                    </div>
+                    <div class="col-5 m-2 p-2 border rounded-3" style="height:2.5em;text-align:center;">
+                      <a href="patchnotes4x.html" target="_blank" class="link-primary fw-bold">パッチノート</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ツール本筋全体をアコーディオンメニューで構築 -->
+      <div class="accordion m-2 my-4" id="pc4x-editor">
+        <!--
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="pc4x-editor-x">
+            <button class="accordion-button border-start" type="button" data-bs-toggle="collapse" data-bs-target="#pc4x-editor-x-body" aria-expanded="true" aria-controls="pc4x-editor-x">
+              項目
+            </button>
+          </h2>
+          <div id="pc4x-editor-x-body" class="accordion-collapse collapse show" aria-labelledby="pc4x-editor-x">
+            <div class="accordion-body">
+              本文
+            </div>
+          </div>
+        </div>
+        -->
+        <div class="accordion-item">
+          <h2 class="accordion-header border-start border-5 border-primary" id="pc4x-editor-1">
+            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#pc4x-editor-1-body" aria-expanded="true" aria-controls="pc4x-editor-1">
+              《変換 -Palette Converter-》の基本的な使い方
+            </button>
+          </h2>
+          <div id="pc4x-editor-1-body" class="accordion-collapse collapse show" aria-labelledby="pc4x-editor-1">
+            <div class="accordion-body">
+              <ol class="description-list">
+                <li>
+                  <span class="fw-bold">上の「キャラクターシート倉庫URL」の欄に、チャットパレットに変換したいキャラクターシートのURLを入力する。</span>
+                  <ul class="small text-secondary">
+                    <li>この時、短縮URLサービスのURLは使用できない。</li>
+                  </ul>
+                </li>
+                <li>
+                  <span class="fw-bold">「ツール指定」で、使用予定のオンラインセッションツールを選択する。</span>
+                  <ul class="small text-secondary">
+                    <li><span class="fw-bold">このうち、「ユドナリウム（ルビのみ）」は、「ユドナリウム」通常の出力に、ルビ振り機能のみを追加したもの。</span><br>記法は対応ツールすべてで共通のため、当該ツールの固有の機能を使用せずにルビ機能だけ振りたいときに用いること。なお、「Udonarium Blue」もルビの記法は同じ。</li>
+                    <li>該当するものがない場合は「なし」を選択すること。</li>
+                  </ul>
+                </li>
+                <li>
+                  <span class="fw-bold">各種オプションの設定を、好みに調整する。</span>
+                  <ul class="small text-secondary">
+                    <li>《魔獣化》中に判定達成値が変わる、ファンブル値が常時アーツで変化する場合などは、必ず「各【能力値】判定＆堕落判定への個別の修正」を編集すること。</li>
+                    <li>4.X系では、アーツ・アイテムの出力文章をもう少し細かくカスタマイズできる。</li>
+                  </ul>
+                </li>
+                <li>
+                  <span class="fw-bold">「チャットパレットを出力」「チャットパレット再出力」をクリックすると、キャラクターシートをもとにチャットパレット用テキストを出力する。</span>
+                  <ul class="small">
+                    <li>ココフォリアとユドナリウム系ツールでは、その後、引き続き設定を行いキャラクター駒用のデータを作成できる。
+                      <ul class="text-secondary">
+                        <li>ココフォリアは、「Clipboard API」に対応したテキストを出力する。出力されたテキストをコピーし、ココフォリア上の部屋で「貼り付け」を行うこと。</li>
+                        <li>ユドナリウム系ツールは、キャラクター駒用のzipファイルを出力する。出力されたzipファイルを、オンセツールの部屋内にドラッグ＆ドロップで展開できる。</li>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <span class="fw-bold">出力オプションのうち、全キャラクターで共有できる設定は、画面上部の「オプション保存」メニューから、「現状を保存」ボタンで保存でき、次にこのページにアクセスしたときに自動で展開できる。</span>
+                  <ul class="text-secondary small">
+                    <li>この機能は、ブラウザのlocalStorage変数を用いて実装している。そのため、「プライベートブラウジング」「シークレットモード」等で閲覧している場合、正常に機能しない可能性がある。</li>
+                    <li>「自動保存」のチェックをONにしている場合、チャットパレットの出力と同時に、設定の保存が行われる。</li>
+                  </ul>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header border-start border-5 border-primary" id="pc4x-editor-2">
+            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#pc4x-editor-2-body" aria-expanded="true" aria-controls="pc4x-editor-2">
+              出力する項目と順序の設定
+            </button>
+          </h2>
+          <div id="pc4x-editor-2-body" class="accordion-collapse collapse show" aria-labelledby="pc4x-editor-2">
+            <div class="accordion-body" style="display:flex;flex-wrap:wrap;align-items:flex-start;">
+              <table class="small m-2 table-bordered pc4x-table"> <!-- 出力順序の設定 -->
+                <caption class="small">
+                  <ul>
+                    <li>表の「項目」のうち、チェックボックスONのものだけが<span class="fw-bold" style="text-decoration:underline;">上から順に</span>出力されます。</li>
+                    <li>「操作」ボタンで順序の入れ替えが可能です。</li>
+                    <li>一部の項目は、選択ツールによっては省略されます。</li>
+                  </ul>
+                </caption>
+                <thead>
+                  <tr class="bg-info bg-opacity-25 fw-bold">
+                    <td style="padding:0px 4px;">項目</td>
+                    <td style="padding:0px 4px;">内容</td>
+                    <td style="padding:0px 4px;text-align:center;">操作</td>
+                    <td v-if="['Tekey', 'ゆとチャadv.'].includes(settings.general.sessionTool)" style="padding:0px 4px;">プルダウン</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="t in settings.outputOrders.list" :class="[t.usable ? '' : 'bg-secondary text-white']" :key="t.name">
+                    <td>
+                      <label style="display:flex;align-items:center;cursor:pointer;padding:4px;">
+                        <input type="checkbox" v-model="t.usable" style="cursor:pointer;margin-right:4px;">
+                        {{t.name}}
+                      </label>
+                    </td>
+                    <td style="cursor:pointer;padding:4px;text-align:left;" @click="t.usable=!t.usable">
+                      {{notes.outputOrders[t.name]}}
+                    </td>
+                    <td style="padding:4px;">
+                      <button @click="spliceTableDataElement($event, settings.outputOrders.list, 'up')">↑</button>
+                      <button @click="spliceTableDataElement($event, settings.outputOrders.list, 'down')">↓</button>
+                    </td>
+                    <td v-if="['Tekey', 'ゆとチャadv.'].includes(settings.general.sessionTool)" style="padding:0px 4px;">
+                      <input type="checkbox" v-model="settings.specialized[settings.general.sessionTool].applyPullDown" :value="t.flag">
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td :colspan="['Tekey', 'ゆとチャadv.'].includes(settings.general.sessionTool) ? 4 : 3">
+                      <button class="btn btn-success fw-bold full-width" @click="initializeOutputOrders()">
+                        出力項目と順序の設定を初期化
+                      </button>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+              <div class="m-2"> <!-- 各オンセツール用の出力設定 -->
+                <div class="border border-info rounded-3 p-2 my-1">
+                  <h6 class="border-start border-5 border-info p-1">出力の対応・非対応一覧</h6>
+                  <ul class="small">
+                    <li v-if="systemConfig().pawnGenerator" class="text-primary fw-bold">
+                      このセッションツールは、駒データの出力に対応しています。
+                    </li>
+                    <li v-if="systemConfig().autoScenePayment" class="text-primary fw-bold">
+                      このセッションツールは、シーン登場時の人間性の低下コストを、ダイスロールと同時に支払います。
+                    </li>
+                    <li v-if="systemConfig().autoArtsPayment" class="text-primary fw-bold">
+                      このセッションツールは、アーツ使用時のコストを、宣言と同時に支払います。
+                    </li>
+                    <li v-if="!systemConfig().attachAbilitiesList" class="text-danger fw-bold">
+                      このセッションツールでは、「能力値一覧」は省略されます。
+                      <span v-if="systemConfig().paramPawn" class="text-secondary fw-normal">（不要のため省略されています）</span>
+                    </li>
+                    <li v-if="systemConfig().attachAbilitiesList && systemConfig().paramPawn" class="text-warning fw-bold">
+                      このセッションツールでは、「能力値一覧」がチャットパレットに一部だけ出力されます。
+                    </li>
+                    <li v-if="!systemConfig().resourceController" class="text-danger fw-bold">
+                      このセッションツールでは、「リソース操作」は省略されます。
+                      <ul v-if="settings.general.sessionTool==='ゆとチャadv.'">
+                        <li>このツールのリソース操作コマンドは、機能がかなり多彩です。<br>「ゆとチャadv.」のマニュアルに詳記されていますので、そちらをご参照ください。</li>
+                      </ul>
+                    </li>
+                    <li v-if="settings.general.sessionTool==='Tekey'" class="text-primary fw-bold">
+                      このセッションツールは、左記の設定すべてのテキストを出力します。
+                    </li>
+                  </ul>
+                </div>
+                <div class="border border-info rounded-3 p-2 my-1" v-if="hasSpecializedOptions">
+                  <h6 class="border-start border-5 border-info p-1">各ツール専用の設定</h6>
+
+                  <!-- ユドナリウムリリィ -->
+                  <div v-show="settings.general.sessionTool==='ユドナリウムリリィ'" class="small">
+                    <ul class="list-unstyled">
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['ユドナリウムリリィ'].outputCostAsUsual">
+                          アーツのコストを通常のユドナリウム系と同じ書式で出力する
+                        </label>
+                      </li>
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['ユドナリウムリリィ'].autoRuby">
+                          アーツ・アイテムの一部名称に、自動でルビを挿入する
+                        </label>
+                      </li>
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['ユドナリウムリリィ'].buffPalette">
+                          「バフパレット」にBS一覧を自動登録する
+                        </label>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Udonarium with Fly -->
+                  <div v-show="settings.general.sessionTool==='Udonarium with Fly'" class="small">
+                    <ul class="list-unstyled">
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['Udonarium with Fly'].autoRuby">
+                          アーツ・アイテムの一部名称に、自動でルビを挿入する
+                        </label>
+                      </li>
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['Udonarium with Fly'].declareWithBlooming">
+                          アーツ・アイテムの名称を「 」で囲み、吹き出し表示の対象にする
+                        </label>
+                        <ul v-if="settings.specialized['Udonarium with Fly'].declareWithBlooming" class="my-1">
+                          <li>
+                            <label class="hover-pointer">
+                              <input type="checkbox" v-model="settings.specialized['Udonarium with Fly'].addExclamationWithDeclaration">
+                              使用宣言の末尾に「！」を加える（アーツ名等の末尾が感嘆符の場合を除く）
+                            </label>
+                          </li>
+                          <li>
+                            <label class="hover-pointer">
+                              <input type="checkbox" v-model="settings.specialized['Udonarium with Fly'].removeBracketWithDeclaration">
+                              使用宣言文のアーツ・アイテム名を括弧<span class="small text-secondary px-1">《 》や『 』</span>で囲まない
+                            </label>
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- ユドナイト -->
+                  <div v-show="settings.general.sessionTool==='ユドナイト'" class="small">
+                    <ul class="list-unstyled">
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['ユドナイト'].autoRuby">
+                          アーツ・アイテムの一部名称に、自動でルビを挿入する
+                        </label>
+                      </li>
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['ユドナイト'].declareWithBlooming">
+                          アーツ・アイテムの名称を「 」で囲み、吹き出し表示の対象にする
+                        </label>
+                        <ul v-if="settings.specialized['ユドナイト'].declareWithBlooming" class="my-1">
+                          <li>
+                            <label class="hover-pointer">
+                              <input type="checkbox" v-model="settings.specialized['ユドナイト'].addExclamationWithDeclaration">
+                              使用宣言の末尾に「！」を加える（アーツ名等の末尾が感嘆符の場合を除く）
+                            </label>
+                          </li>
+                          <li>
+                            <label class="hover-pointer">
+                              <input type="checkbox" v-model="settings.specialized['ユドナイト'].removeBracketWithDeclaration">
+                              使用宣言文のアーツ・アイテム名を括弧<span class="small text-secondary px-1">《 》や『 』</span>で囲まない
+                            </label>
+                          </li>
+                        </ul>
+                      </li>
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['ユドナイト'].autoCheckConsumingResources">
+                          備考欄に回数記載のあるアーツ・アイテムを自動集計する
+                        </label>
+                        <ul class="small text-secondary">
+                          <li>集計対象の詳細は、マニュアルを確認してください。</li>
+                        </ul>
+                      </li>
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['ユドナイト'].bindsOutputAsInnerNotes">
+                          絆・エゴ情報は駒の追加メモ欄にテキスト形式で出力する
+                        </label>
+                        <ul class="small text-secondary">
+                          <li v-if="!settings.specialized['ユドナイト'].bindsOutputAsInnerNotes">
+                            この設定がOFFの場合、絆・エゴ欄は従来のユドナリウム系と同じく、駒内のパラメータとして出力します。
+                          </li>
+                          <li v-else>
+                            「掲示板」機能を使って管理を行う場合、別途部屋内でコピー＆ペーストしてください。
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- ユドナリウム（ルビのみ対応） -->
+                  <div v-show="settings.general.sessionTool==='ユドナリウム（ルビのみ）'" class="small">
+                    <ul class="list-unstyled">
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['ユドナリウム（ルビのみ）'].autoRuby">
+                          アーツ・アイテムの一部名称に、自動でルビを挿入する
+                        </label>
+                      </li>
+                    </ul>
+                  </div>
+                  
+
+                  <!-- Tekey, ゆとチャadv. -->
+                  <div v-if="['Tekey', 'ゆとチャadv.'].includes(settings.general.sessionTool)" class="small">
+                    <ul class="list-unstyled">
+                      <li>「プルダウン」にチェックの入った項目は、チャットパレットの折り畳み設定に対応したテキストを出力します。</li>
+                      <li>
+                        <button class="btn btn-sm btn-success fw-bold m-1" @click="initializePullDownCheck()">
+                          プルダウンリストの初期化（すべてにチェックを入れる）
+                        </button>
+                      </li>
+                      <li v-if="settings.general.sessionTool === 'ゆとチャadv.'" class="my-3">
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['ゆとチャadv.'].autoRuby">
+                          アーツ・アイテムの一部名称に、自動でルビを挿入する
+                        </label>
+                      </li>
+                    </ul>
+                  </div>
+
+                </div>
+
+                <!-- キャラクター駒出力機能 -->
+                <div class="border border-info rounded-3 p-2 my-1" v-if="systemConfig().pawnGenerator">
+                  <h6 class="border-start border-5 border-info p-1">キャラクター駒出力機能の設定</h6>
+                  <div class="small">
+                    <ul class="list-unstyled">
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.outputPawn.initializeParams">
+                          チャットパレット出力ごとに、駒データに紐づけた能力値などを初期化する
+                        </label>
+                      </li>
+                      <li v-if="settings.general.sessionTool !== 'ココフォリア'">
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.outputPawn.initiative">
+                          イニシアティブ集計用の能力値を別に出力する
+                        </label>
+                        <ul v-if="settings.outputPawn.initiative">
+                          <li>
+                            <span>名称：</span>
+                            <input type="text" v-model="settings.outputPawn.initiativeName">
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header border-start border-5 border-primary" id="pc4x-editor-3">
+            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#pc4x-editor-3-body" aria-expanded="true" aria-controls="pc4x-editor-3">
+              基本的な判定のオプション
+            </button>
+          </h2>
+          <div id="pc4x-editor-3-body" class="accordion-collapse collapse show" aria-labelledby="pc4x-editor-3">
+            <div class="accordion-body">
+
+              <div class="p-1">
+                <h6 class="border-start border-bottom border-primary p-1">判定式の出力全般におけるオプション</h6>
+                <div class="small mx-2 px-2" style="user-select:none;">
+                  <ul class="list-unstyled">
+                    <li>
+                      <label class="hover-pointer">
+                        <input type="checkbox" v-model="settings.general.outputFalldownRoll">
+                        「堕落判定」向けの判定行を設け、キャラクターに紐付けるステータスに「絆数」を追加する
+                      </label>
+                    </li>
+                    <li>
+                      <label class="hover-pointer">
+                        <input type="checkbox" v-model="settings.general.outputCalculatedRoll">
+                        判定式を出力する時は、可能な限り計算したものを出力する
+                      </label>
+                    </li>
+                    <li>
+                      <label class="hover-pointer">
+                        <input type="checkbox" v-model="settings.general.autoCheckFumbleValue">
+                        「汎用クリティカル値・ファンブル値の設定」を自動入力する
+                      </label>
+                    </li>
+                    <li>
+                      <label class="hover-pointer">
+                        <input type="checkbox" disabled style="opacity:0;">
+                      </label>
+                      判定式の並べ替え基準：
+                      <select v-model="settings.general.RollSortType">
+                        <option v-for="t in notes.optionsSortType" :value="t">{{t}}</option>
+                      </select>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="p-1">
+                <h6 class="border-start border-bottom border-primary p-1">アーツの「判定値」欄からの出力</h6>
+                <div class="small mx-2 px-2" style="user-select:none;">
+                  <ul class="list-unstyled">
+                    <li>
+                      <label class="hover-pointer">
+                        <input type="checkbox" disabled style="opacity:0;">
+                      </label>
+                      出力する判定式の選別：
+                      <select v-model="settings.arts.outputJudgeText">
+                        <option v-for="t in notes.optionsJudgeType" :value="t">{{t}}</option>
+                      </select>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="p-1">
+                <h6 class="border-start border-bottom border-primary p-1">武器・乗り物の「判定値」欄からの出力</h6>
+                <div class="small mx-2 px-2" style="user-select:none;">
+                  <ul class="list-unstyled">
+                    <li>
+                      <label class="hover-pointer">
+                        <input type="checkbox" disabled style="opacity:0;">
+                      </label>
+                      出力する判定式の選別：
+                      <select v-model="settings.damageRolls.outputJudgeText">
+                        <option v-for="t in notes.optionsJudgeType" :value="t">{{t}}</option>
+                      </select>
+                    </li>
+                    <li>
+                      <label class="hover-pointer">
+                        <input type="checkbox" disabled style="opacity:0;">
+                      </label>
+                      命中欄が符号のない整数の場合：
+                      <select v-model="settings.damageRolls.judgeHeadNumber">
+                        <option v-for="t in notes.optionsJudgeHead" :value="t">{{t}}</option>
+                      </select>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header border-start border-5 border-primary" id="pc4x-editor-4">
+            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#pc4x-editor-4-body" aria-expanded="true" aria-controls="pc4x-editor-4">
+              アーツ・アイテムデータの出力
+            </button>
+          </h2>
+          <div id="pc4x-editor-4-body" class="accordion-collapse collapse show" aria-labelledby="pc4x-editor-4">
+            <div class="accordion-body" style="display:flex; flex-wrap:wrap; justify-content:flex-start; align-items:flex-start; gap:10px;">
+
+              <div class="px-1">
+                <h6 class="border-start border-bottom border-primary p-1">出力するアーツ・アイテムのカスタム</h6>
+                <div class="small" style="user-select:none;">
+                  <ul class="list-unstyled">
+                    <li>
+                      <label class="hover-pointer">
+                        <input type="checkbox" v-model="settings.arts.exceptTimingEmpty">
+                        「タイミング」欄が空欄のものは出力しない
+                      </label>
+                    </li>
+                    <li>
+                      <label class="hover-pointer">
+                        <input type="checkbox" v-model="settings.arts.exceptTimingAuto">
+                        「タイミング」欄が「常時」のものは出力しない
+                      </label>
+                    </li>
+                    <li>
+                      <label class="hover-pointer">
+                        <input type="checkbox" v-model="settings.arts.exceptSelfEffect">
+                        「対象：自身」のアーツは、「対象」の項目を省略して出力する
+                      </label>
+                    </li>
+                    <li>
+                      <label class="hover-pointer">
+                        <input type="checkbox" disabled style="opacity:0;">
+                      </label>
+                      アーツのレベル表記：
+                      <select v-model="settings.arts.displayLevel">
+                        <option v-for="t in notes.optionsDisplayArtsLevel" :value="t">{{t}}</option>
+                      </select>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="px-1 mx-2">
+                <h6 class="border-start border-bottom border-primary p-1">宣言文の出力カスタム</h6>
+                <table class="small table-bordered pc4x-table"> <!-- 出力順序の設定 -->
+                  <caption class="small">
+                    <ul>
+                      <li>表の「出力」のうち、チェックボックスONのものだけが<span class="fw-bold" style="text-decoration:underline;">上から順に</span>出力されます。</li>
+                      <li>「項目」で出力する内容を選び、「テキスト」で内容を記載します。この時、%text% の文字列は、アーツ・アイテムデータのその内容に置き換えられます。</li>
+                      <li>「操作」ボタンで順序の入れ替えが可能です。</li>
+                    </ul>
+                    <div class="alert alert-secondary fw-bold p-2" style="display:flex;flex-direction:column;gap:5px;">
+                      <span>{{character.artsSample}}</span>
+                      <button @click="outputArtsSample()" :disabled="Object.keys(character.mainData).length === 0">アーツ出力テキストのサンプルを確認する</button>
+                    </div>
+                  </caption>
+                  <thead>
+                    <tr class="bg-info bg-opacity-25 fw-bold">
+                      <td style="padding:0px 4px;">出力</td>
+                      <td style="padding:0px 4px;">項目</td>
+                      <td style="padding:0px 4px;">テキスト</td>
+                      <td style="padding:0px 4px;text-align:center;">操作</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(t, index) in settings.arts.outputOrders" :key="index">
+                      <td style="text-align:center;" @click="t.output = !t.output">
+                        <input type="checkbox" v-model="t.output">
+                      </td>
+                      <td style="padding: 0px 4px;">
+                        <select v-model="t.type" style="height:2em;">
+                          <option v-for="opt in notes.outputArtsOrdersOption" :value="opt">{{ notes.outputArtsOrdersName[opt] }}</option>
+                        </select>
+                      </td>
+                      <td style="padding: 0px 4px;">
+                        <input type="text" style="width:100%; height:2em;" v-model="t.text">
+                      </td>
+                      <td style="padding: 4px;display:flex;flex-wrap:nowrap;gap:4px;">
+                        <button class="fw-bold btn-secondary" @click="spliceTableDataElement($event, settings.arts.outputOrders, 'up')">↑</button>
+                        <button class="fw-bold btn-secondary" @click="spliceTableDataElement($event, settings.arts.outputOrders, 'down')">↓</button>
+                        <button @click="spliceTableDataElement($event, settings.arts.outputOrders, 'delete')" class="fw-bold btn-danger">削除</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="1">
+                        <button class="btn btn-primary fw-bold full-width" @click="addArtsOutputOrders()">
+                          追加
+                        </button>
+                      </td>
+                      <td colspan="3">
+                        <button class="btn btn-success fw-bold full-width" @click="initializeArtsOutputOrders()">
+                          出力項目と順序の設定を初期化
+                        </button>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header border-start border-5 border-primary" id="pc4x-editor-5">
+            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#pc4x-editor-5-body" aria-expanded="true" aria-controls="pc4x-editor-5">
+              武器・ダメージロールデータの出力
+            </button>
+          </h2>
+          <div id="pc4x-editor-5-body" class="accordion-collapse collapse show" aria-labelledby="pc4x-editor-5">
+            <div class="accordion-body">
+              <div class="small" style="user-select:none;">
+                <ul class="list-unstyled">
+                  <li>
+                    <label class="hover-pointer">
+                      <input type="checkbox" v-model="settings.damageRolls.includeNotes">
+                      武器のダメージロールに「備考」欄の内容もあわせて出力する
+                    </label>
+                  </li>
+                  <li>
+                    <label class="hover-pointer">
+                      <input type="checkbox" v-model="settings.damageRolls.includeSpAttack">
+                      アーツ効果欄に[ ]で囲まれた部分をダメージロールとして出力する
+                    </label>
+                  </li>
+                </ul>
+              </div>
+              <div class="alert alert-secondary fw-bold" style="font-size:75%;">
+                ダメージロール式の書き方はユーザーによって書き方に幅が大きく、すべてに対応することができません。必ず出力された式を確認し、必要に応じて修正してください。<br>
+                ダメージロール式作成について、書き方の詳細は マニュアル をご参照ください。
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header border-start border-5 border-primary" id="pc4x-editor-6">
+            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#pc4x-editor-6-body" aria-expanded="true" aria-controls="pc4x-editor-6">
+              各【能力値】判定＆堕落判定への個別の修正
+            </button>
+          </h2>
+          <div id="pc4x-editor-6-body" class="accordion-collapse collapse show" aria-labelledby="pc4x-editor-6">
+            <div class="accordion-body">
+              <p class="small">
+                <span class="text-danger">※以下のアーツを取得している場合、この項目の設定を強く推奨します。→</span>
+                <strong class="text-danger">《魔剣の使い手》《幻想存在》《ダメ人間》《ダメ半魔》などの常時判定修正がかかるアーツ、ファンブル値が変化する常時アーツ</strong><br>
+                <span class="text-danger">※命中判定、ドッジの判定や、特定のアーツを使用するときのみにかかる修正は、出力後にテキストをコピペして調整してください。</span>
+            </p>
+              <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;">
+                <table class="small table table-bordered pc4x-table pc4x-table-mod" style="width: 32em;">
+                  <caption class="small">
+                    <ul>
+                      <li>それぞれの【能力値】で判定を行う時に、常時アーツや装備の効果でかかる達成値への修正について、数値で欄に記入する。（プラス修正の符号は不要）</li>
+                      <li>「常時修正」は《魔獣化》中かどうかにかかわらず常にかかる修正を記入する。</li>
+                      <li>「人間状態」は《魔獣化》していない時のみかかる修正を記入する。</li>
+                      <li>「魔獣化中」は《魔獣化》中のみかかる修正を記入する。</li>
+                      <li>命中判定などのパレットは別途コピー＆ペーストしつつ加工すること。</li>
+                    </ul>
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th>【能力値】</th>
+                      <th>常時修正</th>
+                      <th>人間状態</th>
+                      <th>魔獣化中</th>
+                    </tr>
+                  </thead>
+                  <tbody class="table-danger">
+                    <tr>
+                      <th>全ての判定</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.all.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.all.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.all.b"></td>
+                    </tr>
+                  </tbody>
+                  <tbody class="table-primary">
+                    <tr>
+                      <th>【基本能力値】</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.baseAbility.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.baseAbility.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.baseAbility.b"></td>
+                    </tr>
+                  </tbody>
+                  <tbody>
+                    <tr>
+                      <th>【肉体】</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.body.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.body.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.body.b"></td>
+                    </tr>
+                    <tr>
+                      <th>【技術】</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.skill.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.skill.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.skill.b"></td>
+                    </tr>
+                    <tr>
+                      <th>【感情】</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.emotion.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.emotion.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.emotion.b"></td>
+                    </tr>
+                    <tr>
+                      <th>【加護】</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.divine.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.divine.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.divine.b"></td>
+                    </tr>
+                    <tr>
+                      <th>【社会】</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.society.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.society.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.society.b"></td>
+                    </tr>
+                  </tbody>
+                  <tbody class="table-primary">
+                    <tr>
+                      <th>【戦闘能力値】</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.battleAbility.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.battleAbility.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.battleAbility.b"></td>
+                    </tr>
+                  </tbody>
+                  <tbody>
+                    <tr>
+                      <th>【白兵】</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.combat.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.combat.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.combat.b"></td>
+                    </tr>
+                    <tr>
+                      <th>【射撃】</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.shoot.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.shoot.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.shoot.b"></td>
+                    </tr>
+                    <tr>
+                      <th>【回避】</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.dodge.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.dodge.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.dodge.b"></td>
+                    </tr>
+                    <tr>
+                      <th>【行動値】</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.action.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.action.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.action.b"></td>
+                    </tr>
+                  </tbody>
+                  <tbody class="table-dark">
+                    <tr>
+                      <th>堕落判定</th>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.binds.a"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.binds.h"></td>
+                      <td><input type="number" class="mod" v-model.number="modifiers.scoreList.binds.b"></td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colspan="4">
+                        <button class="btn btn-success fw-bold full-width" @click="initializeModifiersList()">
+                          判定とクリティカル・ファンブルの修正値設定を初期化
+                        </button>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+                <div>
+                  <div class="border border-info rounded-3 p-2">
+                    <h6 class="border-start border-5 border-info p-1">汎用クリティカル値・ファンブル値の設定</h6>
+                    <p>取得しているアーツまたは性質にチェックを入れてください。ファンブル値等を自動で計算します。</p>
+                    <ul class="list-unstyled" style="columns: 2;">
+                      <li v-for="art in notes.fumbleArtsList" class="p-1">
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="modifiers.artsFumble" :value="art">
+                          <p style="display:flex;flex-direction:column;margin:0;width:100%;">
+                            <span class="fw-bold border-bottom">《{{art}}》</span>
+                            <span class="text-danger" style="font-size:75%;padding-left:0.5em;">{{notes.fumbleArtsDescription[art]}}</sp>
+                          </p>
+                        </label>
+                      </li>
+                      <li class="p-1">
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="modifiers.artsFumble" value="モータル">
+                          <p style="display:flex;flex-direction:column;margin:0;width:100%;">
+                            <span class="fw-bold border-bottom">《記憶封印》されていない「モータル」</span>
+                            <span class="text-danger" style="font-size:75%;padding-left:0.5em;">クリティカル値12固定、愛の効果を追加、罪の効果を省略</span>
+                          </p>
+                        </label>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="border border-danger rounded-3 p-2 my-2">
+                    <h6 class="border-start border-5 border-danger p-1">記入の事例</h6>
+                    <ul class="small">
+                      <li><strong>《魔剣の使い手》</strong>：「全ての判定」→「常時修正」→「1」と記入</li>
+                      <li><strong>《幻想存在：●●》</strong>：対応する能力値→「魔獣化中」→「2」と記入</li>
+                      <li><strong>《ダメ人間》</strong>：「全ての判定」→「人間状態」→「-2」と記入</li>
+                      <li><strong>《ダメ魔物》</strong>：「全ての判定」→「人間状態」→「2」と記入</li>
+                    </ul>
+                  </div>
+                  <div class="border border-danger rounded-3 p-2 my-2">
+                    <h6 class="border-start border-5 border-danger p-1">その他の豆知識</h6>
+                    <ul class="small">
+                      <li>手動でクリティカル値に補正を掛ける場合、<b>2BB+10%{人間性}<span class="fw-bold text-danger" style="text-decoration:underline">@-1</span></b> のように書くとよい。</li>
+                      <li>手動でファンブル値に補正を掛ける場合、<b>2BB+10%{人間性}<span class="fw-bold text-danger" style="text-decoration:underline">#+1</span></b> のように書くとよい。</li>
+                      <li>複数組み合わせる場合、2BB+10%{人間性}@-1#+1 のように、<span class="fw-bold text-danger">人間性→クリティカル値修正→ファンブル値修正の順で書く</span>。</li>
+                      <li>修正値を記入する場合、2BB+10+3%{人間性} のように、<span class="fw-bold text-danger">人間性やクリティカル値修正を指定する前</span>に記入すること。</li>
+                      <li>「エヴィルセンス」および《それでこそ我がライバル！》は、2BB+10%{人間性}<span class="fw-bold text-danger" style="text-decoration: underline;">&3</span> のように、&3 と最後に付けることで自動処理できる。</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header border-start border-5 border-primary" id="pc4x-editor-7">
+            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#pc4x-editor-7-body" aria-expanded="true" aria-controls="pc4x-editor-7">
+              チャットパレット出力結果
+            </button>
+          </h2>
+          <div id="pc4x-editor-7-body" class="accordion-collapse collapse show" aria-labelledby="pc4x-editor-7">
+            <div class="accordion-body">
+              <div class="my-1" v-show="character.palette">
+                <button class="clipbtn btn btn-primary rounded-3"
+                  data-clipboard-target="#pc4x-palette-result"
+                  @click="showToast()"
+                >
+                  出力テキストをコピー
+                </button>
+              </div>
+
+            </div>
+              <div class="alert alert-danger" v-if="character.paletteError.length > 0">
+                <span class="fw-bold">チャットパレット作成時に、正常に作成できなかった式があります。チャットパレットの内容を確認してください。</span>
+                <ul>
+                  <li v-for="e in character.paletteError">{{ e }}</li>
+                </ul>
+              </div>
+              <textarea class="form-control form-control-sm small" v-model="character.palette" rows="20" id="pc4x-palette-result" placeholder="出力されたテキストが、このテキストボックスに表示されます。"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item" v-show="activePawnMaker">
+          <h2 class="accordion-header border-start border-5 border-primary" id="pc4x-editor-8">
+            <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#pc4x-editor-8-body" aria-expanded="true" aria-controls="pc4x-editor-8">
+              キャラクター駒出力ツール
+            </button>
+          </h2>
+          <div id="pc4x-editor-8-body" class="accordion-collapse collapse show" aria-labelledby="pc4x-editor-8">
+            <div class="accordion-body">
+              <div v-if="character.lastTool !== settings.general.sessionTool" class="alert alert-danger">
+                チャットパレットを出力した時と、現在の出力ツールが異なります。<br>
+                ツールによって適切なチャットパレットやキャラクター駒の出力方法が異なるため、チャットパレットを再出力してデータを読み込み直してください。
+              </div>
+              <div v-if="Object.keys(character.pawnData).length > 0">
+                <!-- 駒データの出力ピット：ココフォリア -->
+                <div v-if="character.lastTool === 'ココフォリア'" style="display:flex;flex-direction:column;">
+                  <div>
+                    <button class="btn fw-bold btn-primary rounded-3 m-1"
+                      data-clipboard-target="#pc4x-ccfolia-pawn" @click="outputCcfoliaPawnText()"
+                    >
+                      以下のデータをもとに、ココフォリアの駒用テキストデータを出力
+                    </button>
+                  </div>
+                  <div v-if="character.pawnData.completedText" style="display:flex;align-items:center;">
+                    <button class="clipbtn btn btn-outline-success rounded-3 m-1"
+                      data-clipboard-target="#pc4x-ccfolia-pawn" @click="showToast()"
+                      style="flex-shrink:1;"
+                    >
+                      コピー
+                    </button>
+                    <input
+                      type="text" v-model="character.pawnData.completedText"
+                      id="pc4x-ccfolia-pawn" readonly placeholder="出力されたテキストが、このテキストボックスに表示されます。"
+                      style="height:2.5em; width:30em; flex-shrink:2;"
+                    >
+                  </div>
+                </div>
+                <div v-if="isUdonariumLineageTool" style="display:flex;flex-direction:column;">
+                  <div>
+                    <button class="btn fw-bold btn-primary rounded-3 m-1" @click="igniteCreateZipForUdonariumPawn()">
+                      以下のデータをもとに、{{character.lastTool}}用の駒zipファイルを出力
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- 駒データの編集セット -->
+                <div class="pawn-flex m-1">
+                  <!-- 基本情報セット -->
+                  <div class="pawn-part">
+                    <div class="pawn-title border border-1 border-primary p-1 my-1 rounded-2">
+                      <span class="fw-bold">
+                        <i class="fa-solid fa-pen-to-square px-1"></i>駒の基本情報
+                      </span>
+                      <button class="btn btn-sm btn-outline-primary rounded-2 border-2 fw-bold" @click="initializePawnBasicSettings()">リセット</button>
+                    </div>
+                    <table class="small table-bordered">
+                      <thead>
+                        <tr class="bg-primary text-white fw-bold">
+                          <td>項目</td>
+                          <td>設定</td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="bg-primary text-white fw-bold">名前</td>
+                          <td style="text-align:left;"><input type="text" v-model="character.pawnData.name" style="width:100%;"></td>
+                        </tr>
+                        <tr>
+                          <td class="bg-primary text-white fw-bold">駒サイズ</td>
+                          <td style="text-align:left;">
+                            <input class="mod" type="number" min="1" v-model="character.pawnData.size">
+                          </td>
+                        </tr>
+                        <tr v-if="character.lastTool === 'ユドナイト'">
+                          <td class="bg-primary text-white fw-bold">イニシア<br>修正</td>
+                          <td style="text-align:left;">
+                            <input class="mod" type="number" v-model="character.pawnData.initiativeMod">
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tbody v-if="settings.general.sessionTool === 'ココフォリア'">
+                        <tr>
+                          <td class="bg-primary text-white fw-bold">駒設定</td>
+                          <td>
+                            <ul class="list-unstyled m-1">
+                              <li>
+                                <label class="hover-pointer">
+                                  <input type="checkbox" v-model="character.pawnData.secret">
+                                  ステータスを非公開にする
+                                </label>
+                              </li>
+                              <li>
+                                <label class="hover-pointer">
+                                  <input type="checkbox" v-model="character.pawnData.invisible">
+                                  発言時キャラクターを表示しない
+                                </label>
+                              </li>
+                              <li>
+                                <label class="hover-pointer">
+                                  <input type="checkbox" v-model="character.pawnData.hideStatus">
+                                  盤面キャラクター一覧に表示しない
+                                </label>
+                              </li>
+                            </ul>
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tbody v-if="colorColspanByTool > 0">
+                        <tr v-if="character.lastTool !== 'ユドナリウムリリィ'">
+                          <td class="bg-primary text-white fw-bold" :rowspan="colorColspanByTool">発言色</td>
+                          <td>
+                            <div style="display:flex;flex-flow:row wrap;align-items:center;">
+                              <input type="text" v-model.lazy="character.pawnData.color" style="width:6em;">
+                              <input type="color" v-model.lazy="character.pawnData.color" style="width:3em;">
+                            </div>
+                          </td>
+                        </tr>
+                        <tr v-if="character.lastTool === 'ユドナリウムリリィ'">
+                          <td class="bg-primary text-white fw-bold" :rowspan="colorColspanByTool">発言色</td>
+                          <td>
+                            <div class="lily-pick" style="display:flex;flex-flow:row wrap;align-items:center;">
+                              <label class="hover-pointer">
+                                <input type="radio" v-model="notes.lilyColorPick" value="0">
+                                <span>第1色</span>
+                              </label>
+                              <input type="text" v-model.lazy="character.pawnData.colorCodes[0]" style="width:6em;">
+                              <input type="color" v-model.lazy="character.pawnData.colorCodes[0]" style="width:3em;">
+                            </div>
+                          </td>
+                        </tr>
+                        <tr v-if="character.lastTool === 'ユドナリウムリリィ'">
+                          <td>
+                            <div class="lily-pick" style="display:flex;flex-flow:row wrap;align-items:center;">
+                              <label class="hover-pointer">
+                                <input type="radio" v-model="notes.lilyColorPick" value="1">
+                                <span>第2色</span>
+                              </label>
+                              <input type="text" v-model.lazy="character.pawnData.colorCodes[1]" style="width:6em;">
+                              <input type="color" v-model.lazy="character.pawnData.colorCodes[1]" style="width:3em;">
+                            </div>
+                          </td>
+                        </tr>
+                        <tr v-if="character.lastTool === 'ユドナリウムリリィ'">
+                          <td>
+                            <div class="lily-pick" style="display:flex;flex-flow:row wrap;align-items:center;">
+                              <label class="hover-pointer">
+                                <input type="radio" v-model="notes.lilyColorPick" value="2">
+                                <span>第3色</span>
+                              </label>
+                              <input type="text" v-model.lazy="character.pawnData.colorCodes[2]" style="width:6em;">
+                              <input type="color" v-model.lazy="character.pawnData.colorCodes[2]" style="width:3em;">
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <div style="display:flex; flex-direction:column;">
+                              <div class="fw-bold" style="text-align:left;">発言色プリセット</div>
+                              <div style="display:flex; flex-wrap:wrap; width:16em;">
+                                <button
+                                v-for="i in chatColorPresets" :key="i" class="m-1"
+                                :style="{'background-color':i}" style="padding: 0.65em;" @click="applyColor($event, i)"
+                                ></button>
+                              </div>
+                              <div class="fw-bold alert alert-secondary small p-1 m-1 align-left" style="width:17em;" v-if="['Udonarium with Fly', 'ユドナイト'].includes(character.lastTool)">
+                                ※文字色を「#FFFFFF」（真っ白）に設定すると、ユーザー側で設定した文字色が反映されます。
+                              </div>
+                              <div class="fw-bold alert alert-secondary small p-1 m-1 align-left" style="width:17em;" v-if="character.lastTool==='ユドナリウムリリィ'">
+                                ※プリセットから色を選択すると、ラジオボタンで選択したスロットに適用されます。
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr v-if="character.lastTool === 'ココフォリア'">
+                          <td class="px-1 small align-left" style="background-color: #454545;">
+                            <span class="fw-bolder" :style="{color: character.pawnData.color}">名前：</span>
+                            <span style="color: #FFFFFF;">発言サンプル</span>
+                          </td>
+                        </tr>
+                        <tr v-if="character.lastTool === 'ココフォリア'">
+                          <td class="px-1 small align-left" style="background-color: #FFFFFF;" :style="{color: character.pawnData.color}">
+                            <span class="fw-bolder">名前：</span>
+                            <span>テキストログ発言サンプル</span>
+                          </td>
+                        </tr>
+                        <tr v-if="character.lastTool === 'Udonarium with Fly'">
+                          <td class="px-1 small align-left" style="background-color: #F4E4CE;" :style="{color: character.pawnData.color}">
+                            <span class="fw-bolder" >名前：</span>
+                            <span>発言サンプル</span>
+                          </td>
+                        </tr>
+                        <tr v-if="character.lastTool === 'ユドナイト'">
+                          <td class="px-1 small align-left" style="background-color: #212121;" :style="{color: character.pawnData.color}">
+                            <span class="fw-bolder" >名前：</span>
+                            <span>発言サンプル（黒背景）</span>
+                          </td>
+                        </tr>
+                        <tr v-if="character.lastTool === 'ユドナイト'">
+                          <td class="px-1 small align-left" style="background-color: #CCCCCC;" :style="{color: character.pawnData.color}">
+                            <span class="fw-bolder" >名前：</span>
+                            <span>発言サンプル（灰背景）</span>
+                          </td>
+                        </tr>
+                        <tr v-if="character.lastTool === 'ユドナイト'">
+                          <td class="px-1 small align-left" style="background-color: #FFFFFF;" :style="{color: character.pawnData.color}">
+                            <span class="fw-bolder" >名前：</span>
+                            <span>発言サンプル（白背景）</span>
+                          </td>
+                        </tr>
+                        <tr v-if="character.lastTool === 'ユドナリウムリリィ'">
+                          <td class="small" style="background-color: #F4E4CE;">
+                            <div class="px-1 align-left" style="display:flex;flex-direction:column;">
+                              <div v-for="(c, index) in character.pawnData.colorCodes" :style="{color: c}">
+                                <span class="fw-bolder" >名前：</span>
+                                <span>発言サンプル（第{{index+1}}色）</span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!--ココフォリア：ステータス-->
+                  <div class="pawn-part" v-if="character.lastTool==='ココフォリア' && 'status' in character.pawnData">
+                    <div class="pawn-title border border-1 border-primary p-1 my-1 rounded-2">
+                      <span class="fw-bold">
+                        <i class="fa-solid fa-pen-to-square px-1"></i>ステータス一覧
+                      </span>
+                      <button class="btn btn-sm btn-outline-primary rounded-2 border-2 fw-bold" @click="addNewElementForCcfolia('status')">追加</button>
+                    </div>
+                    <table class="small table-bordered">
+                      <caption v-if="character.pawnData.status.length > 8" class="text-danger fw-bold">
+                        ※ステータスの数が8個を超えると、以降はイニシアチブ一覧に表示されません。
+                      </caption>
+                      <caption v-else class="small text-secondary">
+                        「変換」ボタンを押すと、ステータスをパラメータに、パラメータをステータスに変換できます。《罪の悦楽》等のお供にどうぞ。<br>
+                        この時、parseInt関数で文字列を数値化するため、数字ではない項目をステータスに変換すると、値が「0」になります。その場合は手動で値を設定してください。
+                      </caption>
+                      <thead>
+                        <tr class="bg-primary text-white fw-bold">
+                          <td>ステータス名</td>
+                          <td>初期値</td>
+                          <td>最大値</td>
+                          <td>操作</td>
+                          <td>変換</td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(t, index) in character.pawnData.status" :key="index">
+                          <td><input class="mod" :class="[index > 7 ? 'limit-alert' : '']" type="text" v-model="t.label"></td>
+                          <td><input class="mod" :class="[index > 7 ? 'limit-alert' : '']" type="number" v-model.number="t.value"></td>
+                          <td><input class="mod" :class="[index > 7 ? 'limit-alert' : '']" type="number" v-model.number="t.max"></td>
+                          <td>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.status, 'up')"><i class="fa-solid fa-arrow-up-long"></i></button>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.status, 'down')"><i class="fa-solid fa-arrow-down-long"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" @click="spliceTableDataElement($event, character.pawnData.status, 'delete')"><i class="fa-regular fa-trash-can"></i></button>
+                          </td>
+                          <td><button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.status, 'translation-P')">＞</button></td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="5">
+                            <button class="btn btn-sm btn-dark full-width" @click="resetCcfoliaPawnStatus()">
+                              ステータスをリセット
+                            </button>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                  <!--ココフォリア：パラメータ-->
+                  <div class="pawn-part" v-if="character.lastTool==='ココフォリア' && 'params' in character.pawnData">
+                    <div class="pawn-title border border-1 border-primary p-1 my-1 rounded-2">
+                      <span class="fw-bold">
+                        <i class="fa-solid fa-pen-to-square px-1"></i> パラメータ一覧
+                      </span>
+                      <button class="btn btn-sm btn-outline-primary rounded-2 border-2 fw-bold" @click="addNewElementForCcfolia('params')">追加</button>
+                    </div>
+                    <table class="small table-bordered">
+                      <thead>
+                        <tr class="bg-primary text-white fw-bold">
+                          <td>変換</td>
+                          <td>パラメータ名</td>
+                          <td>値</td>
+                          <td>操作</td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(t, index) in character.pawnData.params">
+                          <td><button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.params, 'translation-S')">＜</button></td>
+                          <td><input class="mod" type="text" v-model="t.label"></td>
+                          <td><input class="mod" type="text" v-model="t.value"></td>
+                          <td>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.params, 'up')"><i class="fa-solid fa-arrow-up-long"></i></button>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.params, 'down')"><i class="fa-solid fa-arrow-down-long"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" @click="spliceTableDataElement($event, character.pawnData.params, 'delete')"><i class="fa-regular fa-trash-can"></i></button>
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="4">
+                            <button class="btn btn-sm btn-dark full-width" @click="resetCcfoliaPawnParams()">
+                              パラメータをリセット
+                            </button>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  <!-- ユドナリウム系：ステータス -->
+                  <div class="pawn-part" v-if="isUdonariumLineageTool && 'status' in character.pawnData">
+                    <div class="pawn-title border border-1 border-primary p-1 my-1 rounded-2">
+                      <span class="fw-bold">
+                        <i class="fa-solid fa-pen-to-square px-1"></i>キャラクター基本情報
+                      </span>
+                      <button class="btn btn-sm btn-outline-primary rounded-2 border-2 fw-bold" @click="addNewElementForUdonarium('status')">追加</button>
+                    </div>
+                    <table class="small table-bordered">
+                      <thead>
+                        <tr class="bg-primary text-white fw-bold">
+                          <td>名称</td>
+                          <td>種類</td>
+                          <td style="width:4em;">初期値</td>
+                          <td style="width:4em;">最大値</td>
+                          <td>操作</td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(t, index) in character.pawnData.status" :key="index">
+                          <td><input class="mod" type="text" v-model="t.label"></td>
+                          <td>
+                            <select v-model="t.type" @change="udonariumParamsTypeChanged(t)">
+                              <option value="normal">通常</option>
+                              <option value="number">数値</option>
+                              <option value="numberResource">リソース</option>
+                              <option value="note">ノート</option>
+                            </select>
+                          </td>
+                          <td :colspan="t.type.match(/number/) ? 1 : 2" style="text-align:left;">
+                            <input v-if="t.type==='normal'" type="text" v-model="t.value" style="width:100%;">
+                            <input v-if="t.type==='number'" type="number" class="mod" v-model.number="t.value">
+                            <input v-if="t.type==='numberResource'" class="mod" type="number" v-model.number="t.value">
+                            <textarea v-if="t.type==='note'" v-model="t.value" style="width:100%;height:auto;display:block;"></textarea>
+                          </td>
+                          <td v-if="t.type.match(/number/)">
+                            <input v-if="t.type==='numberResource'" class="mod" type="number" v-model.number="t.max">
+                            <span v-else>-</span>
+                          </td>
+                          <td>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.status, 'up')"><i class="fa-solid fa-arrow-up-long"></i></button>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.status, 'down')"><i class="fa-solid fa-arrow-down-long"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" @click="spliceTableDataElement($event, character.pawnData.status, 'delete')"><i class="fa-regular fa-trash-can"></i></button>
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="5">
+                            <button class="btn btn-sm btn-dark full-width" @click="resetUdonariumPawnStatus()">
+                              ステータスをリセット
+                            </button>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  <!-- ユドナリウム系：能力値 -->
+                  <div class="pawn-part" v-if="isUdonariumLineageTool && 'params' in character.pawnData">
+                    <div class="pawn-title border border-1 border-primary p-1 my-1 rounded-2">
+                      <span class="fw-bold">
+                        <i class="fa-solid fa-pen-to-square px-1"></i>【能力値】一覧
+                      </span>
+                      <button class="btn btn-sm btn-outline-primary rounded-2 border-2 fw-bold" @click="addNewElementForUdonarium('params')">追加</button>
+                    </div>
+                    <table class="small table-bordered">
+                      <thead>
+                        <tr class="bg-primary text-white fw-bold">
+                          <td>名称</td>
+                          <td style="width:4em;">値</td>
+                          <td>操作</td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(t, index) in character.pawnData.params" :key="index">
+                          <td><input class="mod" type="text" v-model="t.label"></td>
+                          <td><input class="mod" type="number" v-model.number="t.value"></td>
+                          <td>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.params, 'up')"><i class="fa-solid fa-arrow-up-long"></i></button>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.params, 'down')"><i class="fa-solid fa-arrow-down-long"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" @click="spliceTableDataElement($event, character.pawnData.params, 'delete')"><i class="fa-regular fa-trash-can"></i></button>
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="5">
+                            <button class="btn btn-sm btn-dark full-width" @click="resetUdonariumPawnParams()">
+                              【能力値】をリセット
+                            </button>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  <!-- ユドナリウム系：絆・エゴ -->
+                  <div class="pawn-part" v-if="udonariumManageBindsByParams && 'memoBinds' in character.pawnData">
+                    <div class="pawn-title border border-1 border-primary p-1 my-1 rounded-2">
+                      <span class="fw-bold">
+                        <i class="fa-solid fa-pen-to-square px-1"></i>絆・エゴの一覧
+                      </span>
+                      <button class="btn btn-sm btn-outline-primary rounded-2 border-2 fw-bold" @click="addNewElementForUdonarium('binds')">追加</button>
+                    </div>
+                    <table class="small table-bordered">
+                      <thead>
+                        <tr class="bg-primary text-white fw-bold">
+                          <td>内容</td>
+                          <td>操作</td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(t, index) in character.pawnData.memoBinds" :key="index">
+                          <td><textarea v-model="t.value" cols="30" rows="2" style="display:block;"></textarea></td>
+                          <td>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.memoBinds, 'up')"><i class="fa-solid fa-arrow-up-long"></i></button>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.memoBinds, 'down')"><i class="fa-solid fa-arrow-down-long"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" @click="spliceTableDataElement($event, character.pawnData.memoBinds, 'delete')"><i class="fa-regular fa-trash-can"></i></button>
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="5">
+                            <button class="btn btn-sm btn-dark full-width" @click="resetUdonariumPawnBinds()">
+                              絆・エゴの情報をリセット
+                            </button>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  <!-- ユドナリウムリリィ：バフパレット -->
+                  <div class="pawn-part" v-if="character.lastTool === 'ユドナリウムリリィ' && 'buffPalette' in character.pawnData">
+                    <div class="pawn-title border border-1 border-primary p-1 my-1 rounded-2">
+                      <span class="fw-bold">
+                        <i class="fa-solid fa-pen-to-square px-1"></i>バフパレット
+                      </span>
+                      <div style="display:flex; align-items:center;">
+                        <select v-model="editor.newBuffPalette" class="p-1 mx-1">
+                          <option v-for="bs in notes.optionsBuffPalette" :value="bs">{{bs}}</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline-primary rounded-2 border-2 fw-bold" @click="addLilyBuffPalette()">追加</button>
+                      </div>
+                    </div>
+                    <table class="small table-bordered">
+                      <caption>
+                        <ul>
+                          <li>「追加」をクリックすると新しい要素が追加されます。BS以外のものを作成したいときは「新規」を選択。BS名を選んで「追加」すると、対応するBSの効果が最初から入力されます。</li>
+                          <li>「R限定」にチェックを入れたものは持続ターン数が0になり、リモコンの「0R以下消去」で即座に消去できるようになります。</li>
+                        </ul>
+                      </caption>
+                      <thead>
+                        <tr class="bg-primary text-white fw-bold">
+                          <td>名称</td>
+                          <td>効果</td>
+                          <td>R限定</td>
+                          <td>操作</td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(bs, index) in character.pawnData.buffPalette" :key="index">
+                          <td><input class="mod" type="text" v-model="bs.name"></td>
+                          <td><input type="text" style="width: 10em;" v-model="bs.effect"></td>
+                          <td style="text-align:center;"><input type="checkbox" v-model="bs.round"></td>
+                          <td>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.buffPalette, 'up')"><i class="fa-solid fa-arrow-up-long"></i></button>
+                            <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, character.pawnData.buffPalette, 'down')"><i class="fa-solid fa-arrow-down-long"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" @click="spliceTableDataElement($event, character.pawnData.buffPalette, 'delete')"><i class="fa-regular fa-trash-can"></i></button>
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colspan="4">
+                            <button class="btn btn-sm btn-dark full-width" @click="resetLilyBuffPalette()">
+                              バフパレットをリセット
+                            </button>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  <!--メモ欄の編集（ココフォリア、ユドナイト）-->
+                  <div class="pawn-part" v-if="['ココフォリア', 'ユドナイト'].includes(character.lastTool) && 'memo' in character.pawnData">
+                    <div class="pawn-title border border-1 border-primary p-1 my-1 rounded-2">
+                      <span class="fw-bold">
+                        <i class="fa-solid fa-pen-to-square px-1"></i> メモ欄編集
+                      </span>
+                      <button class="btn btn-sm btn-outline-primary rounded-2 border-2 fw-bold" @click="character.pawnData.memo = ''">リセット</button>
+                    </div>
+                    <table class="small table-bordered">
+                      <tbody>
+                        <tr>
+                          <td class="bg-primary text-white fw-bold">メモ欄</td>
+                          <td><textarea class="small" v-model="character.pawnData.memo" rows="15" style="display:block; width:100%;"></textarea></td>
+                        </tr>
+                        <tr>
+                          <td class="bg-primary text-white fw-bold">引用</td>
+                          <td>
+                            <div style="display:flex;flex-flow:row wrap;gap:4px;">
+                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('profile')">プロフィール</button>
+                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('kinds')">種別</button>
+                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('binds')">絆・エゴ</button>
+                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('SA')">【SA】</button>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- ユドナイトの消耗リソース管理は独立した行に入れる -->
+                <div class="m-1 my-3" v-if="character.lastTool==='ユドナイト' && settings.specialized['ユドナイト'].autoCheckConsumingResources">
+                  <div class="container-fluid border border-primary rounded-3 p-2" style="display:flex;align-items:center;">
+                    <span class="fs-5 fw-bold">ユドナイト：消耗リソース管理</span>
+                    <button class="btn btn-sm fw-bold btn-outline-primary mx-3" @click="resetUdoniteLimitResource()">
+                      消耗リソース一覧を初期化
+                    </button>
+                  </div>
+                  <div class="pawn-flex my-1">
+                    <div class="pawn-part" v-for="r in character.pawnData.limitResources" :key="r.label">
+                      <div class="pawn-title border border-1 border-primary p-1 my-1 rounded-2">
+                        <span class="fw-bold">
+                          <i class="fa-solid fa-pen-to-square px-1"></i>{{ r.label }}
+                        </span>
+                        <button class="btn btn-sm btn-outline-primary rounded-2 border-2 fw-bold" @click="r.values.push({label: '項目', value: 0, max: 0})">追加</button>
+                      </div>
+                      <table class="small table-bordered">
+                        <thead>
+                          <tr class="bg-primary text-white fw-bold">
+                            <td>名称</td>
+                            <td>初期値</td>
+                            <td>最大値</td>
+                            <td>操作</td>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="(t, index) in r.values" :key="index">
+                            <td><input type="text" v-model="t.name"></td>
+                            <td><input class="mod" type="number" v-model.number="t.value"></td>
+                            <td>
+                              <input class="mod" type="number" v-model.number="t.max" :disabled="r.label==='使い捨てアイテム'">
+                            </td>
+                            <td>
+                              <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, r.values, 'up')"><i class="fa-solid fa-arrow-up-long"></i></button>
+                              <button class="btn btn-sm btn-outline-dark" @click="spliceTableDataElement($event, r.values, 'down')"><i class="fa-solid fa-arrow-down-long"></i></button>
+                              <button class="btn btn-sm btn-outline-danger" @click="spliceTableDataElement($event, r.values, 'delete')"><i class="fa-regular fa-trash-can"></i></button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- パレットコピー時のトースト表示 -->
+        <div class="position-fixed top-50 start-25 translate-middle-y p-3" style="z-index: 5">
+          <div
+            id="liveToast"
+            class="toast hide"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <div class="toast-header">
+              <!-- <img src="..." class="rounded me-2" alt="コピー完了"> -->
+              <strong class="me-auto">《変換 -Palette Converter-》</strong>
+              <!-- <small class="text-muted">11 mins ago</small> -->
+              <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+              テキストをコピーしました。
+            </div>
+          </div>
+        </div>
+
+    <!-- エディタ本体ここまで -->
+    </div> <!-- Vueコンテンツを閉じる /div -->
+
+    <footer class="container-fluid bg-secondary text-white p-1" style="display:flex; flex-direction:column; justify-content:center; text-align:center;">
+      <h6 class="fw-bold border-bottom m-0 p-0">《変換 -Palette Converter-》 version 4.X</h6>
+      <p class="m-0 p-1" style="font-size:0.8rem;">
+        Copyright (c) 2022 Yu Krasaka <a class="text-white" href="https://twitter.com/u_krasaka" target="_blank">(Twitter: @u_krasaka)</a><br>
+        Released under the MIT license<br>
+        <a class="text-white" href="https://opensource.org/licenses/mit-license.php" target="_blank">https://opensource.org/licenses/mit-license.php</a>
+      </p>
+      <p class="border-top m-0" style="font-size:0.8rem;">
+        本webツールは、「F.E.A.R.」及び「株式会社KADOKAWA」が権利を有する『ビーストバインド トリニティ』の二次創作物です。(c)井上純一、重信康／F.E.A.R.
+      </p>
+  </footer>
+
+    <!-- Javascript ライブラリ関連の記述 -->
+    <!-- bootstrap js bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <!-- Vue.js -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue@3.1.1/dist/vue.global.prod.js" crossorigin="anonymous"></script> -->
+    <script src="https://unpkg.com/vue@next" crossorigin="anonymous"></script>
+    <!-- FileSaver: ファイル保存 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.js" integrity="sha512-B+gr+zLWg81qxVwvtYwKrmjvQtZKD/GGFF7jD80OfzbqFw+NsbS5faEqpCO7Q7oRw1bYi0+WLJf54j8Vm7NADw==" crossorigin="anonymous"></script>
+    <!-- jsZIP: zipファイルの作成 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.js" integrity="sha512-djAJLNukP3WdWmwP/Y05w99aCX6u1jInpshdwiUKbXcQ9y/8BpMtsPsVrVyUbmtEx7wbqFpBq4sGOnIFVScFQQ==" crossorigin="anonymous"></script>
+    <!-- Clipboard.js: コピー用ボタン機能 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/2a572495d4.js" crossorigin="anonymous"></script>
+    <!-- javascriptファイルの読み込み -->
+    <script type="text/javascript" src="script/main_process.js"></script> <!-- 基本機能 -->
+    <script type="text/javascript" src="script/vue_core_process.js"></script> <!-- 基本機能 -->
+    <!--<script type="text/javascript" src="script/report.js"></script>--> <!-- 基本機能 -->
+    <script type="text/javascript" src="script/sha256.js"></script> <!-- Base64のハッシュ変換 -->
+    <script type="text/javascript" src="script/eval-calculation.js"></script> <!-- 計算 -->
+    <!-- Clipboard.jsで使用する設定を準備 -->
+    <script>
+      const clipboard = new ClipboardJS('.clipbtn');
+      // .clipbtnをすべて取得
+      const buttons = document.querySelectorAll('.clipbtn');
+      // button.clipbtnからマウスが外れた時、ツールチップを削除
+      // for(let i of buttons) { i.addEventListener("mouseleave", clearClipTooltip); }
+      // ツールチップ削除の処理
+      // function clearClipTooltip(e) { e.currentTarget.classList.remove("copy-tooltip") }
+      // ツールチップの追加
+      // function showClipTooltip(element) { element.classList.add("copy-tooltip"); }
+      // クリップボードへのコピーが成功したら、ツールチップを表示
+      // clipboard.on("success", function(e) { showClipTooltip(e.trigger); });
+    </script>
+  </body>
+</html>
