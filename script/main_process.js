@@ -1635,8 +1635,11 @@ function setupUdonariumPawn(data) {
   udonariumPawnStatus(data);
   // パラメータの設定
   udonariumPawnParams(data);
-  // 絆・エゴデータの設定
-  udonariumPawnBindsData(data);
+  // 絆・エゴデータの設定（ユドナイトでメモ欄を使用して出力する場合を除く）
+  const udoniteCheck = (AppCore.character.lastTool === "ユドナイト" && AppCore.settings.specialized["ユドナイト"].bindsOutputAsInnerNotes);
+  if(!udoniteCheck) {
+    udonariumPawnBindsData(data);
+  }
   // ツールごとに必要なデータを設定
   if(AppCore.character.lastTool === "ユドナリウムリリィ") {
     autoInsertLilyBuffPalette();
@@ -1950,9 +1953,10 @@ function createZipForUdonariumPawn() {
   if(pawnData.memoBinds) {
     xmlDetail.binds = pawnData.memoBinds.map(obj => `<data type="note" name="${entity(obj.label)}">${entity(obj.value.toString())}</data>`);
   }
+  console.log("xmlBinds", xmlDetail.binds);
   let xmlStatus = xmlDetail.status ? ('<data name="基本情報">' + xmlDetail.status.join("") + '</data>') : "";
   let xmlParams = xmlDetail.params ? ('<data name="【能力値】">' + xmlDetail.params.join("") + '</data>') : "";
-  let xmlBinds = xmlDetail.binds ? ('<data name="絆・エゴの情報">' + xmlDetail.binds.join("") + '</data>') : "";
+  let xmlBinds = xmlDetail.binds.length > 0 ? ('<data name="絆・エゴの情報">' + xmlDetail.binds.join("") + '</data>') : "";
   xml += '<data name="detail">' + xmlStatus + xmlParams + xmlBinds + '</data>';
   // 5. キャラクター定義の終了
   xml += '</data>';
