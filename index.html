@@ -482,6 +482,12 @@
                           プルダウンリストの初期化（すべてにチェックを入れる）
                         </button>
                       </li>
+                      <li v-if="settings.general.sessionTool === 'Tekey'" class="my-3">
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['Tekey'].autoRuby">
+                          アーツ・アイテムの一部名称に、自動でルビを挿入する
+                        </label>
+                      </li>
                       <li v-if="settings.general.sessionTool === 'ゆとチャadv.'" class="my-3">
                         <label class="hover-pointer">
                           <input type="checkbox" v-model="settings.specialized['ゆとチャadv.'].autoRuby">

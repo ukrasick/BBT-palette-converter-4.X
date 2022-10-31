@@ -88,7 +88,8 @@ const RUBY_TEMPLATE = {
     "Udonarium with Fly": "｜%parent%《%ruby%》",
     "ユドナイト": "｜%parent%《%ruby%》",
     "ユドナリウム（ルビ対応）": "｜%parent%《%ruby%》",
-    "ゆとチャadv.": "｜%parent%《%ruby%》"
+    "ゆとチャadv.": "｜%parent%《%ruby%》",
+    "Tekey": "|%parent%《%ruby%》"
 };
 // ルビ振りの正規表現
 const RUBY_REGEXP = {
@@ -2007,7 +2008,7 @@ function createZipForUdonariumPawn() {
         for(let i of pawnData.limitResources[3].values) { scenario.push(`<data type="numberResource" name="${entity(i.name)}" currentValue="${i.value}">${i.max}</data>`); }
       }
       xml += '<limit-resource parentCharacter="">'
-             + '<data name="common"></data>'
+             + '<data name="common"><data type="numberResource" name="罪の獲得申請" currentValue="1">1</data></data>'
              + (disposable.length > 0 ? `<data name="使い捨てアイテム">${disposable.join("")}</data>` : "")
              + (round.length > 0 ? `<data name="ラウンド制限">${round.join("")}</data>` : "")
              + (scene.length > 0 ? `<data name="シーン制限">${scene.join("")}</data>` : "")

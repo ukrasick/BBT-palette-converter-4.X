@@ -68,6 +68,7 @@ const AppCoreProcess = Vue.createApp({
             bindsOutputAsInnerNotes: true
           },
           "Tekey": {
+            autoRuby: false,
             applyPullDown: ["シーン登場時の処理", "一般的な判定", "一般的な行動", "アーツ一覧", "アイテム一覧", "一般的なリアクション", "愛・罪の効果", "ダメージロール一覧", "能力値関連", "リソース操作"]
           },
           "ゆとチャadv.": {
@@ -208,9 +209,35 @@ const AppCoreProcess = Vue.createApp({
   mounted: function() {
     // localStorageからのデータ読み込み
     try {
+      // ローカルストレージ変数にデータが保存されているかをチェック
       const SavedOptions = localStorage.getItem("PC4x-options");
+      // objectかどうかの判別
+      const checkObject = (obj) => Object.prototype.toString.call(obj).slice(8, -1).toLowerCase();
+      // ネストされたオブジェクトがあるかを確認する変数
+      const checkNestedObject = (obj) => {
+        // console.log(Object.keys(obj));
+        for(let i of Object.keys(obj)) {
+          // console.log("options", `${i}`, obj[i], checkObject(obj[i]));
+          if(checkObject(obj[i]) === "object") { return true; }
+        }
+        return false;
+      };
+      // ローカルストレージ変数からデータを復元
       if(SavedOptions) {
-        Object.assign(this.settings, JSON.parse(SavedOptions));
+        let options = JSON.parse(SavedOptions);
+        // console.log("SavedOptions", options);
+        for(let i of Object.keys(this.settings)) {
+          if(checkNestedObject(this.settings[i])) {
+            // ネストされたオブジェクトがある場合はそれぞれにObject.assignする
+            for(let j of Object.keys(this.settings[i])) {
+              Object.assign(this.settings[i][j], options[i][j]);
+            }
+          } else {
+            // ネストされたオブジェクトがない場合、そのままObject.assignする
+            Object.assign(this.settings[i], options[i]);
+          }
+        }
+        // console.log("Assigned Options", this.settings);
       }
     } catch(error) {
       console.log(error);

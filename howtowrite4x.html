@@ -43,7 +43,7 @@
         <nav class="nav nav-pills d-flex flex-column">
           <a class="nav-link" href="#item1"><span class="nav-head">ダメージロールに関する実例集</span>《魔獣化》中の値の書き方</a>
           <a class="nav-link" href="#item2"><span class="nav-head">一般的な判定に関する実例集</span>アーツ・アイテムの判定値欄</a>
-          <a class="nav-link" href="#item3"><span class="nav-head">ココフォリア、ユドナリウムリリィ</span>リソース操作コマンドへの対応</a>
+          <a class="nav-link" href="#item3"><span class="nav-head">ココフォリア、ユドナリウムリリィ、ユドナイト</span>リソース操作コマンドへの対応</a>
           <a class="nav-link" href="#item4"><span class="nav-head">ユドナイト</span>消耗リソースの管理機能</a>
           <a class="nav-link" href="#item5"><span class="nav-head">BCDiceの使い方</span>BBT判定式等のTips</a>
         </nav>
@@ -249,7 +249,7 @@
                 <ul class="list-unstyled nest-table">
                   <li class="table-responsive">
                     <a class="link-success fw-bold" href="https://docs.ccfolia.com/pl-tutorial/character-edit/status-setting" target="_blank">「ココフォリア」として正式な内容は、ココフォリア公式ドキュメントをお読みください</a>。<br>
-                    この項目は、2022年度にリリースが予定されている「Ccfolia white [ver 2.0]」で仕様変更があった場合、更新を行います。
+                    この項目は、2022年度にリリースが予定されている「Ccfolia white [ver 2.0]」で仕様変更があった場合、更新を行います。なお、10月末に公開されたβバージョンでは未実装だったため、どのような形になるかは不明です。
                     <pre class="m-1 alert alert-light border-1 border-secondary rounded-3">:FP+5　→「FP」のステータスを+5する
 :FP=14　→「FP」のステータスを14にする
 :人間性-3 → 「人間性」のステータスを-3する</pre>
@@ -286,6 +286,21 @@
                       <li>単純に数字が書かれている場合、それはコストが人間性であるとしてテキストを作成します。「愛」「罪」「大罪」「反動n（nは数字）」はコスト欄に明記してください。（愛・罪・大罪の場合、数字は必要ありません）</li>
                     </ul>
                   </li>
+                </ul>
+              </li>
+              <li><span class="fw-bold">ユドナイトのリソース操作記法（ver 1.18時点）</span>
+                <ul class="list-unstyled nest-table">
+                  <li class="table-responsive">
+                    「ユドナイト」として正式な内容は、ユドナイト内で参照できるヘルプをお読みください。<br>
+                    <pre class="m-1 alert alert-light border-1 border-secondary rounded-3">:人間性-3　→ 「人間性を-3」する
+:人間性-2D6　→ ダイスロールを含む式にも対応
+:人間性-2D6KH1 シーン登場時の人間性低下（迫害状態）　→ ダイスロールを含む式の場合、説明文を付けられる</pre>
+                  </li>
+                </ul>
+                <ul>
+                  <li>「ユドナイト」もココフォリア類似のリソース操作記法がありますが、<span class="fw-bold text-primary">ステータス操作パネルがチャットウィンドウに付属しているため、そちらを使うほうが便利</span>です。</li>
+                  <li><span class="px-2 rounded-2 fw-bold" style="background-color:#adb5bd3E;">:人間性-1 コスト消費</span>のような、「定数の増減」に説明文をつけると、ver 1.18時点では動作しません。（通常のテキストチャットとして解釈されるようです）</li>
+                  <li>ver 1.18時点では、<span class="fw-bold text-danger">「リソース」タイプのエレメントに対して、その値がマイナスになるような操作を行おうとすると、変化が0でストップする</span>ことに注意してください。（そのため、v4では【FP】以外のデータがリソース型から数値型で出力されるように変更されています）</li>
                 </ul>
               </li>
             </ul>
@@ -343,6 +358,11 @@
                       <li>通常の数字（例：ラウンド1回）</li>
                       <li>LV（例：シーンLV回）</li>
                       <li>[LV+1]または(LV+1) のような、「LV+数字」を角括弧か丸括弧で囲んだもの（例：シナリオ[LV+1]回）</li>
+                    </ul>
+                  </li>
+                  <li>特別な対応がされるデータについて
+                    <ul class="small">
+                      <li><span class="fw-bold">シナリオ制限回数を上記記法で併記した《幸不幸の等価交換》</span>：初期の残り回数が「0」の状態で出力されます。</li>
                     </ul>
                   </li>
                 </ul>
