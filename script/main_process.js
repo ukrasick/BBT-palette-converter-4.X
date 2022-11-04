@@ -1150,7 +1150,7 @@ function makeActionElementText(element, obj) {
       break;
     case "notes":
       // アーツ・アイテム欄の備考。(:～～)の構文だけ外す
-      str = element.text.replace("%text%", obj.notes).replace(/\(:(.*?)\)/g, "($1)");
+      str = element.text.replace("%text%", obj.notes.replace(/\r?\n/g, " ")).replace(/\(:(.*?)\)/g, "($1)");
       break;
     default:
       // 基本的な対応は、そのアーツ・アイテムの対応する欄を転記
