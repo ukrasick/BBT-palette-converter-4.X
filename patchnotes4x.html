@@ -38,6 +38,43 @@
 
     <div class="container m-1">
       <h3 class="text-primary border-bottom border-primary border-2 p-1">
+        [4.2.0]
+      </h3>
+      <p><time>リリース：2023/1/23
+      </time></p>
+      <ul class="history">
+        <li>
+          <span class="fw-bold text-primary">「ユドナリウムリリィ」の出力で、絆・エゴ表をレコードシート風に表形式で出力する機能を追加しました。</span>
+          <ul class="small">
+            <li class="text-danger fw-bold">この機能は、ユドナリウムリリィ試験サーバ（1.10.0b1.1）以降のバージョンでのみ有効です。</li>
+            <li>
+              ユドナリウムリリィの「各ツール専用の設定」に、<span class="fw-bold">『絆・エゴ情報を「チェック/表」の機能を用いて出力する』</span>という項目を追加しています。<br>
+              この項目にチェックが入っている場合、従来とは以下の点で異なるキャラクター駒を作成します。
+              <ul class="bg-light m-1 mx-2 p-3" style="list-style-position: inside;">
+                <li>絆・エゴの情報を、従来の「ノート」形式ではなく、「チェック/表」形式で出力します。</li>
+                <li>表をなるべく大きく表示するため、ポップアップの幅・高さの初期値が大きくなります。（幅600・高さ400に広げます）</li>
+              </ul>
+            </li>
+            <li><span class="text-danger fw-bold">セッションでの運用にあたっては、以下の点に注意してください。</span>
+              <ul class="bg-light m-1 mx-2 p-3" style="list-style-position: inside;">
+                <li class="text-danger fw-bold">必ず対応するバージョンのユドナリウムリリィを使用してください。</li>
+                <li>ユドナリウムリリィのルーム操作で、インベントリの表示項目に「絆エゴ表」を追加して、「絆エゴ表」をポップアップで表示できるようにしてください。</li>
+                <li>表のチェックボックスは、ポップアップから直接操作できます。</li>
+                <li class="fw-bold text-danger">表のテキスト部分は、現時点ではポップアップから直接書き換えることはできません。キャラクターの詳細ウィンドウを開き、編集してください。</li>
+                <li class="fw-bold text-danger">リリィの「チェック/表」は、Markdown形式で表を作りポップアップに表示する機能のため、絆・エゴ情報の内容にバーティカルバーや角括弧が含まれていると、表が崩壊する可能性があります。</li>
+              </ul>
+            </li>
+            <li>
+              「チェック/表」の操作方法の詳細は、<a href="https://entyu.fanbox.cc/" target="_blank" class="link link-primary fw-bold">円柱氏のpixivFANBOX</a>に記載があります。<br>
+              <span class="text-secondary">（試験サーバの使用は誰でもできますが、マニュアルの閲覧はpixivFANBOXでの支援が必要です。）</span>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div class="container m-1">
+      <h3 class="text-primary border-bottom border-primary border-2 p-1">
         [4.1.1]
       </h3>
       <p><time>リリース：2022/11/5

@@ -370,6 +370,12 @@
                           「バフパレット」にBS一覧を自動登録する
                         </label>
                       </li>
+                      <li>
+                        <label class="hover-pointer">
+                          <input type="checkbox" v-model="settings.specialized['ユドナリウムリリィ'].bindsOutputAsMarkDown">
+                          絆・エゴ情報を「チェック/表」の機能を用いて出力する
+                        </label>
+                      </li>
                     </ul>
                   </div>
 
@@ -1469,7 +1475,7 @@
                   </div>
 
                   <!--メモ欄の編集（ココフォリア、ユドナイト）-->
-                  <div class="pawn-part" v-if="['ココフォリア', 'ユドナイト'].includes(character.lastTool) && 'memo' in character.pawnData">
+                  <div class="pawn-part" v-if="['ココフォリア', 'ユドナイト', 'ユドナリウムリリィ'].includes(character.lastTool) && 'memo' in character.pawnData">
                     <div class="pawn-title border border-1 border-primary p-1 my-1 rounded-2">
                       <span class="fw-bold">
                         <i class="fa-solid fa-pen-to-square px-1"></i> メモ欄編集
@@ -1486,10 +1492,10 @@
                           <td class="bg-primary text-white fw-bold">引用</td>
                           <td>
                             <div style="display:flex;flex-flow:row wrap;gap:4px;">
-                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('profile')">プロフィール</button>
-                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('kinds')">種別</button>
-                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('binds')">絆・エゴ</button>
-                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('SA')">【SA】</button>
+                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('profile')" :disabled="character.lastTool==='ユドナリウムリリィ'">プロフィール</button>
+                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('kinds')" :disabled="character.lastTool==='ユドナリウムリリィ'">種別</button>
+                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('binds')" :disabled="character.lastTool==='ユドナリウムリリィ'">絆・エゴ</button>
+                              <button class="btn btn-sm btn-success" @click="quoteCharacterMemo('SA')" :disabled="character.lastTool==='ユドナリウムリリィ'">【SA】</button>
                             </div>
                           </td>
                         </tr>

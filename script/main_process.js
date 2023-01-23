@@ -174,6 +174,26 @@ function convert(data, cache=false) {
         setupCcfoliaPawn(data);
       }
     }
+    // 必要な初期化の処理は都度行う
+    if(AppCore.character.lastTool === "ユドナリウムリリィ") {
+      if(AppCore.settings.specialized["ユドナリウムリリィ"].bindsOutputAsMarkDown) {
+        if("memoBinds" in AppCore.character.pawnData) {
+          delete AppCore.character.pawnData.memoBinds;
+        }
+        if(!("memo" in AppCore.character.pawnData)) {
+          AppCore.character.pawnData.memo = "";
+          convertLilyBindsTable(data);
+        }
+      } else {
+        if("memo" in AppCore.character.pawnData) {
+          delete AppCore.character.pawnData.memo;
+        }
+        if(!("memoBinds" in AppCore.character.pawnData)) {
+          AppCore.character.pawnData.memoBinds = [];
+          udonariumPawnBindsData(data);
+        }
+      }
+    }
   }
 }
 // 画面のスクロール用関数 id: DOMにおけるコンテンツのID
@@ -1636,10 +1656,15 @@ function setupUdonariumPawn(data) {
   udonariumPawnStatus(data);
   // パラメータの設定
   udonariumPawnParams(data);
-  // 絆・エゴデータの設定（ユドナイトでメモ欄を使用して出力する場合を除く）
+  // 絆・エゴデータの設定（ユドナイトでメモ欄を使用する or リリィで表機能を使用する場合を除く）
+  let bindsOutputAsElements = true;
   const udoniteCheck = (AppCore.character.lastTool === "ユドナイト" && AppCore.settings.specialized["ユドナイト"].bindsOutputAsInnerNotes);
-  if(!udoniteCheck) {
+  const lilyCheck = (AppCore.character.lastTool === "ユドナリウムリリィ" && AppCore.settings.specialized["ユドナリウムリリィ"].bindsOutputAsMarkDown);
+  if(udoniteCheck || lilyCheck) { bindsOutputAsElements = false; }
+  if(bindsOutputAsElements) {
     udonariumPawnBindsData(data);
+  } else if(lilyCheck) {
+    convertLilyBindsTable(data);
   }
   // ツールごとに必要なデータを設定
   if(AppCore.character.lastTool === "ユドナリウムリリィ") {
@@ -1729,6 +1754,47 @@ function udonariumPawnBindsData(data) {
     };
     AppCore.character.pawnData.memoBinds.push(bind);
   }
+}
+// ユドナリウムリリィの絆・エゴを表機能を使って管理する（type="markdown" のパラメータ）
+function convertLilyBindsTable(data) {
+  // データの作成
+  let bindsData = [];
+  bindsData.push(["絆の対象", "関係", "愛獲得", "愛消費", "エゴの内容", "罪獲得", "罪消費", "修復"]);
+  // 絆・エゴデータを読み込む
+  for(let i of sortBindsData(data)) {
+    if(!i || !i.type) { continue; }
+    let r = [];
+    if(i.type === "絆") {
+      console.log(i.name, i.relation);
+      // 絆内容を処理
+      r = [
+        i.name ? i.name : "",
+        i.relation ? i.relation : "（関係）",
+        i.name === "（絆未取得枠）" ? "[]" : "[x]",
+        "[]",
+        "（エゴ化後に記入）",
+        "[]",
+        "[]",
+        "[]"
+      ];
+    } else {
+      // エゴまたは大罪エゴの処理を想定
+      r = [
+        "×",
+        "×",
+        "×",
+        "×",
+        i.name ? i.name : "",
+        "[]",
+        "[]",
+        "×"
+      ];
+    }
+    if(r.length > 0) { bindsData.push(r); }
+  }
+  // 結果データを作成
+  let result = bindsData.map(bind => `｜${bind.join("｜")}｜`);
+  AppCore.character.pawnData.memo = result.join("\n");
 }
 // ユドナリウムリリィのバフパレット自動処理
 function autoInsertLilyBuffPalette() {
@@ -1889,6 +1955,10 @@ function createZipForUdonariumPawn() {
     'roll="0"'
   ];
   if(tool === "ユドナリウムリリィ") {
+    // チェック/表の機能を使う場合、ポップアップの幅を広げておく
+    if("memo" in pawnData) {
+      characterHeaderArray.push('overViewWidth="600"', 'overViewMaxHeight="400"');
+    }
     // ユドナリリィのキャラクター駒発言色はここに埋め込み
     characterHeaderArray = characterHeaderArray.concat([
       `chatColorCode.0="${pawnData.colorCodes[0]}"`,
@@ -1953,6 +2023,8 @@ function createZipForUdonariumPawn() {
   // binds  拾う処理
   if(pawnData.memoBinds) {
     xmlDetail.binds = pawnData.memoBinds.map(obj => `<data type="note" name="${entity(obj.label)}">${entity(obj.value.toString())}</data>`);
+  } else if(pawnData.memo && tool === "ユドナリウムリリィ") {
+    xmlDetail.binds = [`<data type="markdown" name="絆エゴ表">${entity(pawnData.memo)}</data>`];
   }
   console.log("xmlBinds", xmlDetail.binds);
   let xmlStatus = xmlDetail.status ? ('<data name="基本情報">' + xmlDetail.status.join("") + '</data>') : "";

@@ -51,7 +51,8 @@ const AppCoreProcess = Vue.createApp({
           "ユドナリウムリリィ": {
             autoRuby: false,
             buffPalette: true,
-            outputCostAsUsual: false
+            outputCostAsUsual: false,
+            bindsOutputAsMarkDown: false
           },
           "Udonarium with Fly": {
             autoRuby: false,
@@ -410,6 +411,11 @@ const AppCoreProcess = Vue.createApp({
           {label: "シナリオ制限", values: []}
         ];
         this.character.pawnData.memo = "";
+      }
+      if(this.character.lastTool === "ユドナリウムリリィ") {
+        if(this.settings.specialized["ユドナリウムリリィ"].bindsOutputAsMarkDown) {
+          this.character.pawnData.memo = "";
+        }
       }
     },
     // ユドナリウム系のツールごとに異なる初期設定の作成
