@@ -38,15 +38,56 @@
 
     <div class="container m-1">
       <h3 class="text-primary border-bottom border-primary border-2 p-1">
+        [4.2.2]
+      </h3>
+      <p><time>リリース：2023/7/25
+      </time></p>
+      <ul class="history">
+        <li>
+          <span class="fw-bold text-primary">一部の状況で生じるエラーに対策を行いました。</span>
+          <ul class="small">
+            <li>判定値欄に想定されない文字列が入力されていた際、エラーでデータ出力が止まる点に応急処置を行いました。</li>
+            <li>判定値欄に「シーン」<span class="text-secondary">（主に対象や射程を入力する欄を取り違えてしまっているケース）</span>等と入力されている場合の対策です。</li>
+          </ul>
+        </li>
+        <li>
+          <span class="fw-bold text-primary">ファンブル値指定の内容を修正しました。</span>
+          <ul class="small">
+            <li>《不条理肉体》が候補から抜けていた点を修正しました。</li>
+            <li>あわせて、レイアウト調整を行いました。</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div class="container m-1">
+      <h3 class="text-primary border-bottom border-primary border-2 p-1">
+        [4.2.1]
+      </h3>
+      <p><time>リリース：2023/2/26
+      </time></p>
+      <ul class="history">
+        <li>
+          <span class="fw-bold text-primary">本ツールの区分を変更し、正式リリースとします。</span>
+          <ul class="small">
+            <li>本ツールを、区分「Pre-release Tools」から「for BEASTBIND TRINITY」に変更しました。</li>
+            <li class="text-secondary">あわせて、v3系列は「Archived Tools」に移動しています。</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+    <div class="container m-1">
+      <h3 class="text-primary border-bottom border-primary border-2 p-1">
         [4.2.0]
       </h3>
-      <p><time>リリース：2023/1/23
+      <p><time>リリース：2023/1/23（追記・更新：2023/2/26）
       </time></p>
       <ul class="history">
         <li>
           <span class="fw-bold text-primary">「ユドナリウムリリィ」の出力で、絆・エゴ表をレコードシート風に表形式で出力する機能を追加しました。</span>
           <ul class="small">
-            <li class="text-danger fw-bold">この機能は、ユドナリウムリリィ試験サーバ（1.10.0b1.1）以降のバージョンでのみ有効です。</li>
+            <li class="text-danger fw-bold">この機能は、ユドナリウムリリィ（v1.10）以降のバージョンでのみ有効です。</li>
             <li>
               ユドナリウムリリィの「各ツール専用の設定」に、<span class="fw-bold">『絆・エゴ情報を「チェック/表」の機能を用いて出力する』</span>という項目を追加しています。<br>
               この項目にチェックが入っている場合、従来とは以下の点で異なるキャラクター駒を作成します。
@@ -64,9 +105,9 @@
                 <li class="fw-bold text-danger">リリィの「チェック/表」は、Markdown形式で表を作りポップアップに表示する機能のため、絆・エゴ情報の内容にバーティカルバーや角括弧が含まれていると、表が崩壊する可能性があります。</li>
               </ul>
             </li>
-            <li>
-              「チェック/表」の操作方法の詳細は、<a href="https://entyu.fanbox.cc/" target="_blank" class="link link-primary fw-bold">円柱氏のpixivFANBOX</a>に記載があります。<br>
-              <span class="text-secondary">（試験サーバの使用は誰でもできますが、マニュアルの閲覧はpixivFANBOXでの支援が必要です。）</span>
+            <li><span class="fw-bold text-primary">【2023/2/26追記】</span> 
+              <a href="https://twitter.com/t_cylinder/status/1628715456998817792" target="_blank" class="link-success fw-bold">2/23にユドナリウムリリィの正式バージョンアップ（v1.10）が行われ、一般サーバーでも利用可能になりました。</a> 
+              詳細な記法はユドナリウムリリィのマニュアルをご確認ください。
             </li>
           </ul>
         </li>

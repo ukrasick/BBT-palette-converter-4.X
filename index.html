@@ -905,7 +905,7 @@
                       <li v-for="art in notes.fumbleArtsList" class="p-1">
                         <label class="hover-pointer">
                           <input type="checkbox" v-model="modifiers.artsFumble" :value="art">
-                          <p style="display:flex;flex-direction:column;margin:0;width:100%;">
+                          <p style="display:flex;flex-direction:column;margin:0;width:100%;break-inside:avoid;">
                             <span class="fw-bold border-bottom">《{{art}}》</span>
                             <span class="text-danger" style="font-size:75%;padding-left:0.5em;">{{notes.fumbleArtsDescription[art]}}</sp>
                           </p>

@@ -571,6 +571,8 @@ function calcFumble(key, mode="h") {
       a = true; // 《ダメ人間》《しまった、こんな時に》取得時
     }
   }
+  // 《不条理肉体》
+  if(data.includes("不条理肉体")) { i += 1; }
   // 《偉大なる血脈》
   if(data.includes("偉大なる血脈")) { i += 1; }
   // 《この世ならざるもの》
@@ -705,9 +707,12 @@ function outputAllJudgeText(data) {
   }
   // (3) アーツの判定
   for(let art of data.arts) {
+    // console.log(art);
     // 「アーツのデータがない」「名前・判定値のどちらかが空欄」「自動成功／効果参照」「判定値欄の記載が『0』のみ」は弾く
     if(!art || !art.name || !art.judge || art.judge.match(/(?:自動|成功|効果|参照)/) || art.judge === "0") { continue; }
-    for(let s of splitArtsJudgeText(art)) {
+    let arrayArtsJudge = splitArtsJudgeText(art);
+    if(!arrayArtsJudge || arrayArtsJudge.length === 0) { continue; }
+    for(let s of arrayArtsJudge) {
       if(!art.judge) { continue; }
       resource.push({str: s, obj: art, type: "arts"});
     }
@@ -861,6 +866,7 @@ function splitArtsJudgeText(obj) {
   strBase = strBase.replace(/&qformer;(.*?)&qlatter;/g, "($1)");
   let result = strBase.match(/(\{\W{2}\}(?:[\+\-\*\/\d\(\)]*|@[\+\-\d]*|#[A]?[\+\-\d]*|&[1-6])*)/g);
 
+  // console.log("splitArtsJudgeText", result);
   return result;
 }
 // 判定文作成時にエラーが生じた場合、それをエラー用の配列に追加する
@@ -1765,7 +1771,7 @@ function convertLilyBindsTable(data) {
     if(!i || !i.type) { continue; }
     let r = [];
     if(i.type === "絆") {
-      console.log(i.name, i.relation);
+      // console.log(i.name, i.relation);
       // 絆内容を処理
       r = [
         i.name ? i.name : "",
@@ -2026,7 +2032,7 @@ function createZipForUdonariumPawn() {
   } else if(pawnData.memo && tool === "ユドナリウムリリィ") {
     xmlDetail.binds = [`<data type="markdown" name="絆エゴ表">${entity(pawnData.memo)}</data>`];
   }
-  console.log("xmlBinds", xmlDetail.binds);
+  // console.log("xmlBinds", xmlDetail.binds);
   let xmlStatus = xmlDetail.status ? ('<data name="基本情報">' + xmlDetail.status.join("") + '</data>') : "";
   let xmlParams = xmlDetail.params ? ('<data name="【能力値】">' + xmlDetail.params.join("") + '</data>') : "";
   let xmlBinds = xmlDetail.binds.length > 0 ? ('<data name="絆・エゴの情報">' + xmlDetail.binds.join("") + '</data>') : "";
