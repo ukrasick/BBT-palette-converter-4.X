@@ -129,6 +129,8 @@ function convert(data, cache=false) {
     AppCore.character.mainDataName = data.base.name;
     data = AppCore.character.mainData;  // キャッシュしたものにデータをすり替える
   }
+
+  console.log(data);
   
   // ファンブル値変化アーツの自動検索がONの場合、ここで行う
   if(AppCore.settings.general.autoCheckFumbleValue) {
@@ -1915,8 +1917,16 @@ function filterUdoniteLimitResourceCount(data, type="round") {
 // ユドナリウム系の駒画像データの処理
 function udonariumProcessPawnImage(data) {
   let hashImage, b64Image;
-  if(data.images) {
-    b64Image = data.images.uploadImage.replace(/^.*,/, "");
+  if(Object.keys(data.images).length > 0) {
+    if("uploadImage" in data.images) {
+      if(data.images.uploadImage) {
+        b64Image = data.images.uploadImage.replace(/^.*,/, "");
+      }
+    } else {
+      if(data.images[""]) {
+        b64Image = data.images[""].replace(/^.*,/, "");
+      }
+    }
     let shaObj = new jsSHA("SHA-256", "B64");
     shaObj.update(b64Image);
     hashImage = shaObj.getHash("HEX");
