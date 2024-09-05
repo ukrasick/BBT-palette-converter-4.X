@@ -1236,7 +1236,7 @@ function makeCostTextForLily(cost) {
     result.push(`${cost}`);
   }
   // 配列を連結した文字列に変換して返す
-  return result.join(" ");
+  return result.join(" ") + " ";
 }
 
 // リアクション宣言文の出力
