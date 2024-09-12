@@ -1918,6 +1918,7 @@ function filterUdoniteLimitResourceCount(data, type="round") {
 function udonariumProcessPawnImage(data) {
   let hashImage, b64Image;
   if(Object.keys(data.images).length > 0) {
+    /*
     if("uploadImage" in data.images) {
       if(data.images.uploadImage) {
         b64Image = data.images.uploadImage.replace(/^.*,/, "");
@@ -1925,6 +1926,13 @@ function udonariumProcessPawnImage(data) {
     } else {
       if(data.images[""]) {
         b64Image = data.images[""].replace(/^.*,/, "");
+      }
+    }
+    */
+    for(let i of Object.values(data.images)) {
+      if(i.match(/data:image\/.*,/)) {
+        b64Image = i.replace(/^.*,/, "");
+        break;
       }
     }
     let shaObj = new jsSHA("SHA-256", "B64");
