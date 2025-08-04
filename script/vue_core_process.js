@@ -244,6 +244,24 @@ const AppCoreProcess = Vue.createApp({
     } catch(error) {
       console.log(error);
     }
+    // URLオブジェクトの取得
+    let url_string = window.location.href;
+    let url = new URL(url_string);
+    // URL引数からキャラクターシートURLと初期ツールを取得
+    const Argument = {
+      sheet: url.searchParams.get("sheet"),
+      tool: url.searchParams.get("tool")
+    };
+    if(Argument.sheet) {
+      this.character.sheetUrl = "https://character-sheets.appspot.com/bbt/edit.html?key=" + Argument.sheet;
+    }
+    if(Argument.tool && ["ココフォリア", "ユドナリウム", "ユドナリウムリリィ", "Udonarium with Fly", "ユドナイト"].includes(Argument.tool)) {
+      this.settings.general.sessionTool = Argument.tool;
+    }
+    // キャラクターシートURLとツールの指定が揃っている場合、即座にコンバータを動作させる
+    if(Argument.sheet && Argument.tool && ["ココフォリア", "ユドナリウム", "ユドナリウムリリィ", "Udonarium with Fly", "ユドナイト"].includes(Argument.tool)) {
+      this.processStart();
+    }
     // Bootstrap/toastの初期化
     this.toastInit();
   },
