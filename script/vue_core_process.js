@@ -409,6 +409,7 @@ const AppCoreProcess = Vue.createApp({
         action: {a:0, h:0, b:0},
         binds: {a:0, h:0, b:0}
       };
+      this.modifiers.artsFumble = [];
     },
     // 駒データのリセット
     initializePawnData() {

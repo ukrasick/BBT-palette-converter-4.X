@@ -131,6 +131,8 @@ function convert(data, cache=false) {
   }
 
   console.log(data);
+
+  console.log("isMortal", isMortal(data));
   
   // ファンブル値変化アーツの自動検索がONの場合、ここで行う
   if(AppCore.settings.general.autoCheckFumbleValue) {
@@ -273,31 +275,35 @@ function checkGeneralCriticalAndFumbleData(data) {
 // 《記憶封印》を持たないモータルか否かをチェック
 function isMortal(data) {
   // キャッシュデータに登録済みの場合、それを返却
-  if("isMortal" in data) { return data.isMortal; }
-  // プライマリブラッド、セカンダリブラッドを取得
-  let array = [data.base.bloods.primary, data.base.bloods.secondary];
-  let result = 0;
-  // 追加ルーツを取得。ただし初期値の場合は追加しない
-  for(let i of data.addRoots) {
-    if(i.bloodmanual || i.racemanual || i.root || i.rootmanual) {
-      array.push(i);
+  if("isMortal" in data) return data.isMortal;
+  
+  // ブラッドの配列を取得
+  const array = [data.base.bloods.primary, data.base.bloods.secondary]
+    .concat(data.addRoots)
+    .filter(b => b.bloodmanual || b.racemanual || b.root || b.rootmanual);
+  console.log(array);
+  let result = true;
+  for (let b of array) {
+    // blood以外のすべての項目がnullならスキップ
+    if(!b.bloodmanual && !b.racemanual && !b.root && !b.rootmanual) continue;
+    // 「ブラッド：手動入力」かつ「bloodmanual: ハーミット」「rootmanual: モータル」以外を持つならアウト
+    if(b.blood === "ハーミット") {
+      // 今後の実装を想定した判定をあらかじめ作成。キャラクターシート倉庫の体裁に、GF誌の実装順に当てはめるなら
+      // モータルに対応するルーツ番号は「11」になる
+      if(b.root !== "11") {
+        result = false;
+        break;
+      }
+    } else if (b.blood !== "手動入力" || b.bloodmanual !== "ハーミット" || b.rootmanual !== "モータル") {
+      // その他の場合、以下の条件をひとつでも満たすならモータルではないと判定する
+      // 「ブラッドが手動入力ではない」「手動入力のブラッドがハーミットではない」「手動入力のルーツがモータルではない」
+      result = false;
+      break;
     }
+    // 今後、ブラッド：ハーミット／ルーツ：モータルがキャラクターシート倉庫に正式実装された場合、この判定基準は改訂が必要
+    // 実装された値を元に b.blood === "ハーミット" ブロックの処理を変更する必要がある
   }
-  // ルーツ一覧から、モータルのルーツが存在するかどうかをチェックする
-  for(let b of array) {
-    // モータルのルーツが名指しされている場合、それを記録
-    // サプリメント化によってキャラクターシート倉庫の更新があった場合は要チェック
-    if(b.blood === "手動入力" && b.rootmanual === "モータル") { result += 1; }
-    // ブラッド：ハーミットの場合、先にcontinueして処理をスキップ
-    // 「ルーツ：巫女」も、サプリ化でキャラクターシート倉庫が更新されたら処理要注意
-    if(b.blood === "手動入力" && b.rootmanual === "巫女") { continue; }
-    if(b.blood === "ハーミット") { continue; }
-    // それ以外のブラッドをひとつでも持つ＝《記憶封印》ではないモータルではないので即座にfalse
-    data.isMortal = false;
-    return false;
-  }
-  // 「ルーツ：モータル」の記載があった欄の数を確認
-  data.isMortal = result > 0;
+  data.isMortal = result;
   return data.isMortal;
 }
 // 「ルーツ：呪われし者」か否かをチェック
@@ -1189,6 +1195,7 @@ function makeActionElementText(element, obj) {
 }
 // コスト式の作成 cost: コストの文字列
 function makeCostTextForDefault(cost) {
+  // console.log("makeCostTextForDefault-inside", cost);
   // モータルかどうかを確認
   let mortal = (isMortal(AppCore.character.mainData) || AppCore.modifiers.artsFumble.includes("モータル"));
   if(cost.match(/^[\+\-]?\d+$/)) {
@@ -1206,6 +1213,7 @@ function makeCostTextForLily(cost) {
   let result = ["コスト"];
   // モータルであるかどうかを判定しておく
   let mortal = (isMortal(AppCore.character.mainData) || AppCore.modifiers.artsFumble.includes("モータル"));
+  // console.log("makeCostTextForLily", cost, `mortal: ${mortal}`);
   // 「コスト：効果参照」はそのままリターン
   if(cost.match(/効果参照/)) { return "コスト：効果参照"; }
   // 空白文字と改行の削除
