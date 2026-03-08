@@ -1066,6 +1066,7 @@ function outputGeneralActions(data) {
     // 白兵攻撃宣言
     if(weapon.type.match(/白/)) {
       let strCombat = `${str}で白兵攻撃`;
+      if(weapon.type.includes("魔獣")) strCombat += "【魔獣化中】";
       if((tool in specialized) && specialized[tool].declareWithBlooming) {
         strCombat = setupDeclareWithBlooming(strCombat);
       }
@@ -1074,6 +1075,7 @@ function outputGeneralActions(data) {
     // 射撃攻撃宣言
     if(weapon.type.match(/射/)) {
       let strShoot = `${str}で射撃攻撃`;
+      if(weapon.type.includes("魔獣")) strShoot += "【魔獣化中】";
       if((tool in specialized) && specialized[tool].declareWithBlooming) {
         strShoot = setupDeclareWithBlooming(strShoot);
       }
@@ -1083,6 +1085,7 @@ function outputGeneralActions(data) {
     if(weapon.type.match(/乗/) && !weapon.type.match(/[白射]/)) {
       let attackType = checkVehicleAttackType(weapon);
       let strVehicle = `${str}で${attackType}攻撃`;
+      if(weapon.type.includes("魔獣")) strVehicle += "【魔獣化中】";
       if((tool in specialized) && specialized[tool].declareWithBlooming) {
         strVehicle = setupDeclareWithBlooming(strVehicle);
       }
